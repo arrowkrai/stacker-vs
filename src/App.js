@@ -1,9 +1,9 @@
-import Game from './components/Game';
+import { Stacker } from "./components/Stacker";
 
 function App() {
   return (
     <div>
-      <Game />
+      <Stacker />
     </div>
   );
 }

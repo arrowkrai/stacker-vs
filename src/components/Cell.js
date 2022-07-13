@@ -9,7 +9,7 @@ const Cell = ({ color, active }) => {
       style={{
         width: CELL_SIZE,
         height: CELL_SIZE,
-        borderRadius: 4,
+        borderRadius: 6,
         margin:1,
         backgroundColor: cellColor,
         boxShadow: active ? `0 0 ${CELL_SIZE / 2}px ${color}` : undefined,

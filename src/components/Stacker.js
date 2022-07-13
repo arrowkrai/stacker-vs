@@ -30,10 +30,10 @@ const testBoard = [
 const theme = createTheme({
   palette: {
     primary: {
-      main: green[300],
+      main: green[800],
     },
     secondary: {
-      main: red[200],
+      main: red[900],
     },
   },
 });
@@ -57,17 +57,7 @@ export const Stacker = () => {
     setReset(true);
   };
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        backgroundColor: BACKGROUND_COLOR,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-        position: "relative",
-      }}
-    >
+    <>
       {gameOver && (
         <>
           <Box
@@ -149,6 +139,6 @@ export const Stacker = () => {
       />
       <Typography sx={{ color: blue[100], mt: 2 }}>Current Score: {score}</Typography>
       <Typography sx={{ color: blue[100] }}>High Score: {highScore}</Typography>
-    </Box>
+    </>
   );
 };

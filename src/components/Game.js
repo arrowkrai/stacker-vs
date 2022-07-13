@@ -27,10 +27,8 @@ export const update = (game, action) => {
       return game;
     }
     case "TICK":
-      if (game.state !== "PLAYING") return game;
       return applyMove("TICK", game);
     case "MOVE_USER":
-      if (game.state !== "PLAYING") return game;
       return applyMove("MOVE_USER", game);
     default:
       throw new Error("Unhandled Action");
@@ -39,7 +37,6 @@ export const update = (game, action) => {
 
 const applyMove = (move, game) => {
   if (game.state !== "PLAYING") return game;
-
   var result;
   switch (move) {
     case "TICK":
@@ -47,14 +44,9 @@ const applyMove = (move, game) => {
       return { ...game, piece: result };
     case "MOVE_USER":
       result = moveUser(game.board, game.piece);
-      // console.log(result)
       if (result === "WIN") {
-        // dispatch("TOGGLE_WIN");
-        // Handle game win
         return { ...game, gameOver: "WIN", state: "PAUSED" };
       } else if (result === "LOSE") {
-        // Handle game lose
-
         return { ...game, gameOver: "LOSE", state: "PAUSED" };
       } else {
         return { ...game, points: game.points + 1, piece: result.piece, board: result.board };
@@ -77,11 +69,9 @@ export const createBoard = () => {
 };
 
 const initPiece = () => {
-  const length = INITIAL_LENGTH;
-  const direction = "RIGHT";
   return {
-    length,
-    direction,
+    length: INITIAL_LENGTH,
+    direction: "RIGHT",
     position: { x: INITIAL_X_POSITION, y: ROW_AMOUNT - 1 },
   };
 };
@@ -109,8 +99,7 @@ const deepCopy = (arr) => {
 };
 
 const renderBoard = (board, piece) => {
-  let tempBoard;
-  tempBoard = deepCopy(board);
+  let tempBoard = deepCopy(board);
   const activeRow = piece.position.y;
   let startingColumn = piece.position.x;
   for (let i = startingColumn; i < startingColumn + piece.length; i++) {
@@ -129,7 +118,6 @@ const userListener = (input, dispatch) => {
     case "PAUSE":
       dispatch("TOGGLE_PAUSE");
       break;
-
     default:
       throw new Error("Unhandled User input");
   }
@@ -152,12 +140,6 @@ const removeEventListeners = (dispatch) => {
 const tickRate = (activeRow) => 110 - 4.8 * activeRow - activeRow ** 1.05;
 const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset }) => {
   const [game, dispatch] = useReducer(update, init());
-
-  useEffect(() => {
-    dispatch("RESTART");
-    setReset(false);
-    setGameOver("");
-  }, [reset, setReset]);
 
   let activeRow = getActiveRow(game);
   useEffect(() => {
@@ -189,7 +171,12 @@ const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset }) => 
     setScore(game.points);
   }, [setScore, game.points]);
 
-  // console.log("game", game)
+  useEffect(() => {
+    dispatch("RESTART");
+    setReset(false);
+    setGameOver("");
+  }, [reset, setReset, setGameOver]);
+
   const viewBoard = renderBoard(game.board, game.piece);
 
   return (

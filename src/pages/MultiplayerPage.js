@@ -45,10 +45,12 @@ const MultiplayerPage = ({ gameId, userName }) => {
   const [myPiece, setMyPiece] = React.useState({});
   const [myScore, setMyScore] = React.useState(0);
   const [myHighScore, setMyHighScore] = React.useState(0);
+  const [myPause, setMyPause] = React.useState(false)
   const [enemyBoard, setEnemyBoard] = React.useState([]);
   const [enemyPiece, setEnemyPiece] = React.useState({});
   const [enemyScore, setEnemyScore] = React.useState(0);
   const [enemyHighScore, setEnemyHighScore] = React.useState(0);
+  const [enemyPause, setEnemyPause] = React.useState(false)
   const [timer, setTimer] = React.useState(TIMER_SECONDS);
   const [timeUp, setTimeUp] = React.useState(false);
 
@@ -80,9 +82,10 @@ const MultiplayerPage = ({ gameId, userName }) => {
         myPiece,
         myScore,
         myHighScore,
+        myPause,
       });
     }
-  }, [myBoard, myPiece]);
+  }, [myBoard, myPiece, myPause]);
 
   React.useEffect(() => {
     socket.on("opponent move", (move) => {
@@ -91,6 +94,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
         setEnemyPiece(move.myPiece);
         setEnemyScore(move.myScore);
         setEnemyHighScore(move.myHighScore);
+        setEnemyPause(move.myPause)
       }
     });
 
@@ -187,10 +191,12 @@ const MultiplayerPage = ({ gameId, userName }) => {
                       setMyPiece={setMyPiece}
                       setMyScore={setMyScore}
                       setMyHighScore={setMyHighScore}
+                      setMyPause={setMyPause}
                       enemyBoard={enemyBoard}
                       enemyPiece={enemyPiece}
                       enemyScore={enemyScore}
                       enemyHighScore={enemyHighScore}
+                      enemyPause={enemyPause}
                     />
                   </Box>
                   <Box>
@@ -203,10 +209,12 @@ const MultiplayerPage = ({ gameId, userName }) => {
                       setMyPiece={setMyPiece}
                       setMyScore={setMyScore}
                       setMyHighScore={setMyHighScore}
+                      setMyPause={setMyPause}
                       enemyBoard={enemyBoard}
                       enemyPiece={enemyPiece}
                       enemyScore={enemyScore}
                       enemyHighScore={enemyHighScore}
+                      enemyPause={enemyPause}
                     />
                   </Box>
                 </Box>
@@ -230,10 +238,12 @@ const MultiplayerPage = ({ gameId, userName }) => {
                       setMyPiece={setMyPiece}
                       setMyScore={setMyScore}
                       setMyHighScore={setMyHighScore}
+                      setMyPause={setMyPause}
                       enemyBoard={enemyBoard}
                       enemyPiece={enemyPiece}
                       enemyScore={enemyScore}
                       enemyHighScore={enemyHighScore}
+                      enemyPause={enemyPause}
                     />
                   </Box>
                   <Box>
@@ -246,10 +256,12 @@ const MultiplayerPage = ({ gameId, userName }) => {
                       setMyPiece={setMyPiece}
                       setMyScore={setMyScore}
                       setMyHighScore={setMyHighScore}
+                      setMyPause={setMyPause}
                       enemyBoard={enemyBoard}
                       enemyPiece={enemyPiece}
                       enemyScore={enemyScore}
                       enemyHighScore={enemyHighScore}
+                      enemyPause={enemyPause}
                     />
                   </Box>
                 </Box>

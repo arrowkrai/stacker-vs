@@ -123,16 +123,20 @@ const userListener = (input, dispatch) => {
   }
 };
 
-const addEventListeners = (dispatch) => {
+const addEventListeners = (dispatch, multiplayer) => {
+  if (!multiplayer) {
+    window.addEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", dispatch));
+  }
   window.addEventListener("mousedown", (e) => userListener("CLICK", dispatch));
-  window.addEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", dispatch));
   window.addEventListener("keydown", (e) => e.code === "Space" && userListener("CLICK", dispatch));
   window.addEventListener("keydown", (e) => e.code === "ArrowDown" && userListener("CLICK", dispatch));
 };
 
-const removeEventListeners = (dispatch) => {
+const removeEventListeners = (dispatch, multiplayer) => {
+  if (!multiplayer) {
+    window.removeEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", dispatch));
+  }
   window.removeEventListener("mousedown", () => userListener("MOUSEDOWN", dispatch));
-  window.removeEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", dispatch));
   window.removeEventListener("keydown", (e) => e.code === "Space" && userListener("CLICK", dispatch));
   window.removeEventListener("keydown", (e) => e.code === "ArrowDown" && userListener("CLICK", dispatch));
 };
@@ -152,14 +156,20 @@ const Game = ({
   setMyPiece,
   setMyScore,
   setMyHighScore,
+  setMyPause,
   enemyBoard,
   enemyPiece,
+  enemyPause,
 }) => {
   const [game, dispatch] = useReducer(update, init());
 
   useEffect(() => {
     if (multiplayer) {
       if (game.gameOver === "LOSE") {
+        setMyPause(true);
+        setTimeout(() => {
+          setMyPause(false);
+        }, 100);
         setTimeout(() => {
           dispatch("RESTART");
           setReset(false);
@@ -184,10 +194,10 @@ const Game = ({
 
   useEffect(() => {
     if (controllable) {
-      addEventListeners(dispatch);
+      addEventListeners(dispatch, multiplayer);
     }
     return () => {
-      removeEventListeners(dispatch);
+      removeEventListeners(dispatch, multiplayer);
     };
   }, []);
 
@@ -224,6 +234,17 @@ const Game = ({
       }
     }
   }, [enemyBoard]);
+
+  useEffect(() => {
+    if (multiplayer && !controllable) {
+      if (enemyPause) {
+        dispatch("PAUSE");
+        setTimeout(() => {
+          dispatch("RESUME");
+        }, 1000);
+      }
+    }
+  }, [enemyPause, game.state]);
 
   const viewBoard = renderBoard(game.board, game.piece);
 

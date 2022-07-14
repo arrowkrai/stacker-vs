@@ -27,10 +27,12 @@ export const Stacker = ({
   setMyPiece,
   setMyScore,
   setMyHighScore,
+  setMyPause,
   enemyBoard,
   enemyPiece,
   enemyScore,
   enemyHighScore,
+  enemyPause,
 }) => {
   const [reset, setReset] = useState(false);
   const [gameOver, setGameOver] = useState("");
@@ -59,8 +61,6 @@ export const Stacker = ({
             component={motion.div}
             animate={{
               opacity: [0, 1],
-              position: "absolute",
-              top: "20%",
             }}
             style={{
               opacity: 0,
@@ -77,19 +77,18 @@ export const Stacker = ({
               component={motion.div}
               animate={{
                 backgroundColor: "rgba(0, 0, 0, 0.9)",
-                padding: [0, 30],
-                y: [-150, 100],
+                opacity: [0, 100],
                 boxShadow: "0 0 5px rgba(0, 0, 0, 0.9)",
-                width: ["45%", "100%"],
               }}
-              transition={{ delay: 1.5, duration: 1.5 }}
+              style={{ y: 95, width: "100%" }}
+              transition={{ delay: 0.3, duration: 1.5 }}
             >
               <Typography
                 component={motion.div}
-                animate={{ color: ["#fff", textColor] }}
-                transition={{ delay: 0.5, duration: 1 }}
+                animate={{ opacity: [0, 1], scale: [0.8, 1], margin: [0, 30] }}
+                transition={{ delay: 0.3, duration: 3.5 }}
                 variant="h3"
-                style={{ fontSize: 58, fontWeight: 500 }}
+                style={{ fontSize: 64, fontWeight: 500, color: textColor }}
               >
                 {gameOver ? `YOU ${gameOver}` : ""}
               </Typography>
@@ -98,7 +97,7 @@ export const Stacker = ({
           <ThemeProvider theme={theme}>
             <Box
               animate={{ y: [-9999, 0] }}
-              transition={{ delay: 2.9, duration: 0.05 }}
+              transition={{ delay: 2.95, duration: 0.05 }}
               component={motion.div}
               style={{ display: "flex", justifyContent: "center" }}
             >
@@ -138,8 +137,10 @@ export const Stacker = ({
         setMyPiece={setMyPiece}
         setMyScore={setMyScore}
         setMyHighScore={setMyHighScore}
+        setMyPause={setMyPause}
         enemyBoard={enemyBoard}
         enemyPiece={enemyPiece}
+        enemyPause={enemyPause}
       />
       <Typography sx={{ color: Color(color).lighten(0.4).toString(), mt: 2, textAlign: "center" }}>
         Current Score: {score}

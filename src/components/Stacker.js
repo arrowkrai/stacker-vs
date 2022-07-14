@@ -15,6 +15,9 @@ const theme = createTheme({
     secondary: {
       main: red[900],
     },
+    warning: {
+      main: orange[800],
+    },
   },
 });
 
@@ -28,11 +31,15 @@ export const Stacker = ({
   setMyScore,
   setMyHighScore,
   setMyPause,
+  setMyWin,
+  setMyLose,
   enemyBoard,
   enemyPiece,
   enemyScore,
   enemyHighScore,
   enemyPause,
+  enemyWin,
+  enemyLose,
 }) => {
   const [reset, setReset] = useState(false);
   const [gameOver, setGameOver] = useState("");
@@ -47,15 +54,16 @@ export const Stacker = ({
     }
   }, [highScore, score, enemyScore, enemyHighScore]);
 
-  const textColor = gameOver === "LOSE" ? red[900] : green[800];
-  const buttonType = gameOver === "LOSE" ? "secondary" : "primary";
+
+  const textColor = gameOver === "LOSE" ? red[900] : gameOver === "WIN" ? green[800] : orange[800];
+  const buttonType = gameOver === "LOSE" ? "secondary" : gameOver === "WIN" ? "primary" : "warning";
   const resetState = (e) => {
     e.preventDefault();
     setReset(true);
   };
   return (
     <>
-      {gameOver && (
+      {multiplayer && gameOver && (
         <>
           <Box
             component={motion.div}
@@ -90,7 +98,7 @@ export const Stacker = ({
                 variant="h3"
                 style={{ fontSize: 64, fontWeight: 500, color: textColor }}
               >
-                {gameOver ? `YOU ${gameOver}` : ""}
+                {gameOver === "WIN" || gameOver === "LOSE" ? `YOU ${gameOver}` : "TIE"}
               </Typography>
             </Box>
           </Box>
@@ -138,9 +146,13 @@ export const Stacker = ({
         setMyScore={setMyScore}
         setMyHighScore={setMyHighScore}
         setMyPause={setMyPause}
+        setMyWin={setMyWin}
+        setMyLose={setMyLose}
         enemyBoard={enemyBoard}
         enemyPiece={enemyPiece}
         enemyPause={enemyPause}
+        enemyWin={enemyWin}
+        enemyLose={enemyLose}
       />
       <Typography sx={{ color: Color(color).lighten(0.4).toString(), mt: 2, textAlign: "center" }}>
         Current Score: {score}

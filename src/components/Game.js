@@ -157,23 +157,42 @@ const Game = ({
   setMyScore,
   setMyHighScore,
   setMyPause,
+  setMyWin,
+  setMyLose,
   enemyBoard,
   enemyPiece,
   enemyPause,
+  enemyWin,
+  enemyLose,
 }) => {
   const [game, dispatch] = useReducer(update, init());
 
   useEffect(() => {
     if (multiplayer) {
+      if (game.gameOver === "WIN") {
+        setMyWin(true);
+      }
+
+      if (enemyWin || enemyLose) {
+        dispatch("PAUSE");
+      }
+    }
+  }, [enemyWin, enemyLose]);
+
+  useEffect(() => {
+    if (multiplayer) {
       if (game.gameOver === "LOSE") {
         setMyPause(true);
+        setMyPiece(game.piece);
         setTimeout(() => {
           setMyPause(false);
         }, 100);
         setTimeout(() => {
-          dispatch("RESTART");
-          setReset(false);
-          setGameOver("");
+          if (!(enemyWin || enemyLose)) {
+            dispatch("RESTART");
+            setReset(false);
+            setGameOver("");
+          }
         }, 1000);
       }
     }

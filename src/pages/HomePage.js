@@ -1,5 +1,5 @@
 import { Box, Button, Modal, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Board } from "../components/Board";
 import { BACKGROUND_COLOR, BOARD_COLOR, CELL_COLOR } from "../components/Constants";
 import { createBoard } from "../components/Game";
@@ -8,6 +8,7 @@ import Color from "color";
 import { blue } from "@mui/material/colors";
 import { motion } from "framer-motion";
 import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 const style = {
   position: "absolute",
@@ -24,20 +25,31 @@ const style = {
 
 const emptyBoard = createBoard();
 
-const HomePage = () => {
+const HomePage = ({setUsername}) => {
   const navigate = useNavigate();
   const [gameMode, setGameMode] = useState("");
-
 
   const [open, setOpen] = React.useState(true);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  useEffect(() => {
+    setUsername("Player 1")
+  }, [setUsername])
+
+  const multiplayerRedirect = (gameid) => {
+    navigate(`/${gameid}`);
+  };
+
   const handleSinglePlayer = (e) => {
     e.preventDefault();
     setGameMode("SINGLEPLAYER");
   };
-  const handleMultiplayer = () => {};
+  const handleMultiplayer = (e) => {
+    e.preventDefault();
+
+    multiplayerRedirect(uuidv4());
+  };
 
   // TODO: WHEN BUTTON IS PRESSED, ANIMATE, THEN NAVIGATE AFTER ANIMATION
   // so i'm guessing its probably just setTimeout(navigate, 4000) then start animating
@@ -59,11 +71,10 @@ const HomePage = () => {
     >
       {gameMode === "SINGLEPLAYER" ? (
         <Stacker />
-      ) : (
+      ) : gameMode === "MULTIPLAYER" ? null : (
         <>
-
-        {/* Overlay may need this for animation */}
-      {/* <Box sx={{ backgroundColor:"#000", minHeight:"100vh", width:"100%", opacity: 0.5, zIndex:2 }} /> */}
+          {/* Overlay may need this for animation */}
+          {/* <Box sx={{ backgroundColor:"#000", minHeight:"100vh", width:"100%", opacity: 0.5, zIndex:2 }} /> */}
 
           <Modal
             disableEnforceFocus
@@ -80,7 +91,7 @@ const HomePage = () => {
                   top: "20%",
                   textAlign: "center",
                   left: "50%",
-                  transform: "translate(-50%, -100%)",
+                  transform: "translate(-50%, -110%)",
                   textShadow:
                     "0 0 6px rgba(202,228,225,0.98),0 0 30px rgba(202,228,225,0.42),0 0 12px rgba(30,132,242,0.58),0 0 22px rgba(30,132,242,0.84),0 0 38px rgba(30,132,242,0.88),0 0 60px rgba(30,132,242,1)",
                 }}

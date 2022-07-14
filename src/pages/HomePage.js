@@ -25,7 +25,7 @@ const style = {
 
 const emptyBoard = createBoard();
 
-const HomePage = ({setUsername}) => {
+const HomePage = ({ setUsername }) => {
   const navigate = useNavigate();
   const [gameMode, setGameMode] = useState("");
 
@@ -34,8 +34,8 @@ const HomePage = ({setUsername}) => {
   const handleClose = () => setOpen(false);
 
   useEffect(() => {
-    setUsername("Player 1")
-  }, [setUsername])
+    setUsername("Player 1");
+  }, [setUsername]);
 
   const multiplayerRedirect = (gameid) => {
     navigate(`/${gameid}`);
@@ -47,6 +47,10 @@ const HomePage = ({setUsername}) => {
   };
   const handleMultiplayer = (e) => {
     e.preventDefault();
+
+    // TODO: Show Spinner and if longer than 5 seconds,
+    // show message saying if it takes longer than 10 seconds,
+    // reloading the web page may fix it, however the server may be down
 
     multiplayerRedirect(uuidv4());
   };
@@ -70,7 +74,7 @@ const HomePage = ({setUsername}) => {
       }}
     >
       {gameMode === "SINGLEPLAYER" ? (
-        <Stacker />
+        <Stacker color={CELL_COLOR} boardColor={BOARD_COLOR} controllable={true} multiplayer={false}/>
       ) : gameMode === "MULTIPLAYER" ? null : (
         <>
           {/* Overlay may need this for animation */}

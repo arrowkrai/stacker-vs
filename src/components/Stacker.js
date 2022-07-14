@@ -6,26 +6,6 @@ import Game from "./Game";
 import { motion } from "framer-motion";
 import { blue, green, red, purple, orange, amber, deepOrange, indigo, lightBlue, blueGrey } from "@mui/material/colors";
 import Color from "color";
-// import Game from "../../components/Game";
-
-const testBoard = [
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false, false, false],
-  [false, false, false, false, true, true, true, true, false, false],
-];
 
 const theme = createTheme({
   palette: {
@@ -38,7 +18,7 @@ const theme = createTheme({
   },
 });
 
-export const Stacker = () => {
+export const Stacker = ({ color, boardColor, controllable, multiplayer }) => {
   const [reset, setReset] = useState(false);
   const [gameOver, setGameOver] = useState("");
   const [score, setScore] = useState(0);
@@ -130,15 +110,21 @@ export const Stacker = () => {
         </>
       )}
       <Game
-        color={CELL_COLOR}
-        boardColor={BOARD_COLOR}
+        color={color}
+        boardColor={boardColor}
+        controllable={controllable}
         setGameOver={setGameOver}
         setScore={setScore}
         reset={reset}
         setReset={setReset}
+        multiplayer={multiplayer}
       />
-      <Typography sx={{ color: blue[100], mt: 2 }}>Current Score: {score}</Typography>
-      <Typography sx={{ color: blue[100] }}>High Score: {highScore}</Typography>
+      <Typography sx={{ color: Color(color).lighten(0.4).toString(), mt: 2, textAlign: "center" }}>
+        Current Score: {score}
+      </Typography>
+      <Typography sx={{ color: Color(color).lighten(0.4).toString(), textAlign: "center" }}>
+        High Score: {highScore}
+      </Typography>
     </>
   );
 };

@@ -138,8 +138,20 @@ const removeEventListeners = (dispatch) => {
 };
 
 const tickRate = (activeRow) => 110 - 4.8 * activeRow - activeRow ** 1.05;
-const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset }) => {
+const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset, controllable, multiplayer }) => {
   const [game, dispatch] = useReducer(update, init());
+
+  useEffect(() => {
+    if (multiplayer) {
+      if (game.gameOver === "LOSE") {
+        setTimeout(() => {
+          dispatch("RESTART");
+          setReset(false);
+          setGameOver("");
+        }, 1000);
+      }
+    }
+  }, [game, dispatch, multiplayer, setReset, setGameOver]);
 
   let activeRow = getActiveRow(game);
   useEffect(() => {
@@ -155,17 +167,19 @@ const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset }) => 
   }, [game.state, activeRow]);
 
   useEffect(() => {
-    addEventListeners(dispatch);
+    if (controllable) {
+      addEventListeners(dispatch);
+    }
     return () => {
       removeEventListeners(dispatch);
     };
   }, []);
 
   useEffect(() => {
-    if (game.gameOver) {
+    if (!multiplayer && game.gameOver) {
       setGameOver(game.gameOver);
     }
-  }, [game.gameOver, setGameOver]);
+  }, [game.gameOver, setGameOver, multiplayer]);
 
   useEffect(() => {
     setScore(game.points);

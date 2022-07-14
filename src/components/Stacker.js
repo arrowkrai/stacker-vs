@@ -25,20 +25,26 @@ export const Stacker = ({
   multiplayer,
   setMyBoard,
   setMyPiece,
+  setMyScore,
+  setMyHighScore,
   enemyBoard,
   enemyPiece,
+  enemyScore,
+  enemyHighScore,
 }) => {
   const [reset, setReset] = useState(false);
   const [gameOver, setGameOver] = useState("");
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   useEffect(() => {
-    setHighScore(Math.max(score, highScore));
-  }, [highScore, score]);
-  useEffect(() => {
-    if (gameOver) {
+    if (!controllable && multiplayer) {
+      setScore(enemyScore);
+      setHighScore(enemyHighScore);
+    } else {
+      setHighScore(Math.max(score, highScore));
     }
-  }, [gameOver]);
+  }, [highScore, score, enemyScore, enemyHighScore]);
+
   const textColor = gameOver === "LOSE" ? red[900] : green[800];
   const buttonType = gameOver === "LOSE" ? "secondary" : "primary";
   const resetState = (e) => {
@@ -127,8 +133,11 @@ export const Stacker = ({
         reset={reset}
         setReset={setReset}
         multiplayer={multiplayer}
+        highScore={highScore}
         setMyBoard={setMyBoard}
         setMyPiece={setMyPiece}
+        setMyScore={setMyScore}
+        setMyHighScore={setMyHighScore}
         enemyBoard={enemyBoard}
         enemyPiece={enemyPiece}
       />

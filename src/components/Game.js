@@ -147,8 +147,11 @@ const Game = ({
   setReset,
   controllable,
   multiplayer,
+  highScore,
   setMyBoard,
   setMyPiece,
+  setMyScore,
+  setMyHighScore,
   enemyBoard,
   enemyPiece,
 }) => {
@@ -208,6 +211,8 @@ const Game = ({
     if (multiplayer && controllable) {
       setMyBoard(game.board);
       setMyPiece(game.piece);
+      setMyScore(game.points);
+      setMyHighScore(Math.max(highScore, game.points));
     }
   }, [game.points]);
 

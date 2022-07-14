@@ -8,6 +8,8 @@ import {
   ENEMY_BACKGROUND_COLOR,
   ENEMY_BOARD_COLOR,
   ENEMY_CELL_COLOR,
+  ROW_AMOUNT,
+  TIMER_SECONDS,
 } from "../components/Constants";
 import { blue } from "@mui/material/colors";
 import { Board } from "../components/Board";
@@ -41,8 +43,33 @@ const MultiplayerPage = ({ gameId, userName }) => {
   const [open, setOpen] = React.useState(true);
   const [myBoard, setMyBoard] = React.useState([]);
   const [myPiece, setMyPiece] = React.useState({});
+  const [myScore, setMyScore] = React.useState(0);
+  const [myHighScore, setMyHighScore] = React.useState(0);
   const [enemyBoard, setEnemyBoard] = React.useState([]);
   const [enemyPiece, setEnemyPiece] = React.useState({});
+  const [enemyScore, setEnemyScore] = React.useState(0);
+  const [enemyHighScore, setEnemyHighScore] = React.useState(0);
+  const [timer, setTimer] = React.useState(TIMER_SECONDS);
+  const [timeUp, setTimeUp] = React.useState(false);
+
+  React.useEffect(() => {
+    let interval;
+    if (opponentDidJoinTheGame) {
+      interval = window.setInterval(() => {
+        if (timer > 0) setTimer(timer - 1);
+      }, 1000);
+    }
+    if (timer === 0) {
+      setTimeout(()=>{
+        console.log('Times Up')
+        setTimeUp(true)
+        // TODO: Stop both games, determine winner, show YOU WIN to winner
+      }, 1000)
+    }
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [opponentDidJoinTheGame, timer]);
 
   React.useEffect(() => {
     if (myBoard && myPiece) {
@@ -51,15 +78,19 @@ const MultiplayerPage = ({ gameId, userName }) => {
         userName,
         myBoard,
         myPiece,
+        myScore,
+        myHighScore,
       });
     }
   }, [myBoard, myPiece]);
 
   React.useEffect(() => {
     socket.on("opponent move", (move) => {
-      if (move.userName !== userName) {
+      if (move.myBoard.length > 0 && move.userName !== userName) {
         setEnemyBoard(move.myBoard);
         setEnemyPiece(move.myPiece);
+        setEnemyScore(move.myScore);
+        setEnemyHighScore(move.myHighScore);
       }
     });
 
@@ -144,59 +175,91 @@ const MultiplayerPage = ({ gameId, userName }) => {
               }}
             />
             {userName === "Player 1" ? (
-              <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
-                <Box sx={{ mr: 20 }}>
-                  <Stacker
-                    color={CELL_COLOR}
-                    boardColor={BOARD_COLOR}
-                    controllable={true}
-                    multiplayer={true}
-                    setMyBoard={setMyBoard}
-                    setMyPiece={setMyPiece}
-                    enemyBoard={enemyBoard}
-                    enemyPiece={enemyPiece}
-                  />
+              <>
+                <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
+                  <Box sx={{ mr: 20 }}>
+                    <Stacker
+                      color={CELL_COLOR}
+                      boardColor={BOARD_COLOR}
+                      controllable={true}
+                      multiplayer={true}
+                      setMyBoard={setMyBoard}
+                      setMyPiece={setMyPiece}
+                      setMyScore={setMyScore}
+                      setMyHighScore={setMyHighScore}
+                      enemyBoard={enemyBoard}
+                      enemyPiece={enemyPiece}
+                      enemyScore={enemyScore}
+                      enemyHighScore={enemyHighScore}
+                    />
+                  </Box>
+                  <Box>
+                    <Stacker
+                      color={ENEMY_CELL_COLOR}
+                      boardColor={ENEMY_BOARD_COLOR}
+                      controllable={false}
+                      multiplayer={true}
+                      setMyBoard={setMyBoard}
+                      setMyPiece={setMyPiece}
+                      setMyScore={setMyScore}
+                      setMyHighScore={setMyHighScore}
+                      enemyBoard={enemyBoard}
+                      enemyPiece={enemyPiece}
+                      enemyScore={enemyScore}
+                      enemyHighScore={enemyHighScore}
+                    />
+                  </Box>
                 </Box>
-                <Box>
-                  <Stacker
-                    color={ENEMY_CELL_COLOR}
-                    boardColor={ENEMY_BOARD_COLOR}
-                    controllable={false}
-                    multiplayer={true}
-                    setMyBoard={setMyBoard}
-                    setMyPiece={setMyPiece}
-                    enemyBoard={enemyBoard}
-                    enemyPiece={enemyPiece}
-                  />
-                </Box>
-              </Box>
+                <Typography
+                  variant="h4"
+                  sx={{ zIndex: 2, color: "grey.200", position: "absolute", transform: "translate(0%, 700%)", fontWeight:700 }}
+                >
+                  {timer}
+                </Typography>
+              </>
             ) : userName === "Player 2" ? (
-              <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
-                <Box sx={{ mr: 20 }}>
-                  <Stacker
-                    color={CELL_COLOR}
-                    boardColor={BOARD_COLOR}
-                    controllable={false}
-                    multiplayer={true}
-                    setMyBoard={setMyBoard}
-                    setMyPiece={setMyPiece}
-                    enemyBoard={enemyBoard}
-                    enemyPiece={enemyPiece}
-                  />
+              <>
+                <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
+                  <Box sx={{ mr: 20 }}>
+                    <Stacker
+                      color={CELL_COLOR}
+                      boardColor={BOARD_COLOR}
+                      controllable={false}
+                      multiplayer={true}
+                      setMyBoard={setMyBoard}
+                      setMyPiece={setMyPiece}
+                      setMyScore={setMyScore}
+                      setMyHighScore={setMyHighScore}
+                      enemyBoard={enemyBoard}
+                      enemyPiece={enemyPiece}
+                      enemyScore={enemyScore}
+                      enemyHighScore={enemyHighScore}
+                    />
+                  </Box>
+                  <Box>
+                    <Stacker
+                      color={ENEMY_CELL_COLOR}
+                      boardColor={ENEMY_BOARD_COLOR}
+                      controllable={true}
+                      multiplayer={true}
+                      setMyBoard={setMyBoard}
+                      setMyPiece={setMyPiece}
+                      setMyScore={setMyScore}
+                      setMyHighScore={setMyHighScore}
+                      enemyBoard={enemyBoard}
+                      enemyPiece={enemyPiece}
+                      enemyScore={enemyScore}
+                      enemyHighScore={enemyHighScore}
+                    />
+                  </Box>
                 </Box>
-                <Box>
-                  <Stacker
-                    color={ENEMY_CELL_COLOR}
-                    boardColor={ENEMY_BOARD_COLOR}
-                    controllable={true}
-                    multiplayer={true}
-                    setMyBoard={setMyBoard}
-                    setMyPiece={setMyPiece}
-                    enemyBoard={enemyBoard}
-                    enemyPiece={enemyPiece}
-                  />
-                </Box>
-              </Box>
+                <Typography
+                  variant="h4"
+                  sx={{ zIndex: 2, color: "grey.200", position: "absolute", transform: "translate(0%, 700%)", fontWeight:700 }}
+                >
+                  {timer}
+                </Typography>
+              </>
             ) : (
               <Typography color="error">An error occured: Invalid Username</Typography>
             )}

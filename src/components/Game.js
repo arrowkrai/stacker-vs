@@ -138,7 +138,20 @@ const removeEventListeners = (dispatch) => {
 };
 
 const tickRate = (activeRow) => 110 - 4.8 * activeRow - activeRow ** 1.05;
-const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset, controllable, multiplayer }) => {
+const Game = ({
+  color,
+  boardColor,
+  setGameOver,
+  setScore,
+  reset,
+  setReset,
+  controllable,
+  multiplayer,
+  setMyBoard,
+  setMyPiece,
+  enemyBoard,
+  enemyPiece,
+}) => {
   const [game, dispatch] = useReducer(update, init());
 
   useEffect(() => {
@@ -190,6 +203,22 @@ const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset, contr
     setReset(false);
     setGameOver("");
   }, [reset, setReset, setGameOver]);
+
+  useEffect(() => {
+    if (multiplayer && controllable) {
+      setMyBoard(game.board);
+      setMyPiece(game.piece);
+    }
+  }, [game.points]);
+
+  useEffect(() => {
+    if (multiplayer && !controllable) {
+      if (enemyBoard.length && enemyPiece) {
+        game.board = enemyBoard;
+        game.piece = enemyPiece;
+      }
+    }
+  }, [enemyBoard]);
 
   const viewBoard = renderBoard(game.board, game.piece);
 

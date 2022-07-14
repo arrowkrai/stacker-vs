@@ -39,8 +39,30 @@ const MultiplayerPage = ({ gameId, userName }) => {
   const [opponentUserName, setUserName] = React.useState("");
   const [gameSessionDoesNotExist, doesntExist] = React.useState(false);
   const [open, setOpen] = React.useState(true);
+  const [myBoard, setMyBoard] = React.useState([]);
+  const [myPiece, setMyPiece] = React.useState({});
+  const [enemyBoard, setEnemyBoard] = React.useState([]);
+  const [enemyPiece, setEnemyPiece] = React.useState({});
 
   React.useEffect(() => {
+    if (myBoard && myPiece) {
+      socket.emit("new move", {
+        gameId,
+        userName,
+        myBoard,
+        myPiece,
+      });
+    }
+  }, [myBoard, myPiece]);
+
+  React.useEffect(() => {
+    socket.on("opponent move", (move) => {
+      if (move.userName !== userName) {
+        setEnemyBoard(move.myBoard);
+        setEnemyPiece(move.myPiece);
+      }
+    });
+
     socket.on("playerJoinedRoom", (statusUpdate) => {
       console.log(
         "A new player has joined the room! Username: " +
@@ -124,7 +146,16 @@ const MultiplayerPage = ({ gameId, userName }) => {
             {userName === "Player 1" ? (
               <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
                 <Box sx={{ mr: 20 }}>
-                  <Stacker color={CELL_COLOR} boardColor={BOARD_COLOR} controllable={true} multiplayer={true} />
+                  <Stacker
+                    color={CELL_COLOR}
+                    boardColor={BOARD_COLOR}
+                    controllable={true}
+                    multiplayer={true}
+                    setMyBoard={setMyBoard}
+                    setMyPiece={setMyPiece}
+                    enemyBoard={enemyBoard}
+                    enemyPiece={enemyPiece}
+                  />
                 </Box>
                 <Box>
                   <Stacker
@@ -132,13 +163,26 @@ const MultiplayerPage = ({ gameId, userName }) => {
                     boardColor={ENEMY_BOARD_COLOR}
                     controllable={false}
                     multiplayer={true}
+                    setMyBoard={setMyBoard}
+                    setMyPiece={setMyPiece}
+                    enemyBoard={enemyBoard}
+                    enemyPiece={enemyPiece}
                   />
                 </Box>
               </Box>
             ) : userName === "Player 2" ? (
               <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
                 <Box sx={{ mr: 20 }}>
-                  <Stacker color={CELL_COLOR} boardColor={BOARD_COLOR} controllable={false} multiplayer={true} />
+                  <Stacker
+                    color={CELL_COLOR}
+                    boardColor={BOARD_COLOR}
+                    controllable={false}
+                    multiplayer={true}
+                    setMyBoard={setMyBoard}
+                    setMyPiece={setMyPiece}
+                    enemyBoard={enemyBoard}
+                    enemyPiece={enemyPiece}
+                  />
                 </Box>
                 <Box>
                   <Stacker
@@ -146,6 +190,10 @@ const MultiplayerPage = ({ gameId, userName }) => {
                     boardColor={ENEMY_BOARD_COLOR}
                     controllable={true}
                     multiplayer={true}
+                    setMyBoard={setMyBoard}
+                    setMyPiece={setMyPiece}
+                    enemyBoard={enemyBoard}
+                    enemyPiece={enemyPiece}
                   />
                 </Box>
               </Box>

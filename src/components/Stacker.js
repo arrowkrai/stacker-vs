@@ -18,7 +18,16 @@ const theme = createTheme({
   },
 });
 
-export const Stacker = ({ color, boardColor, controllable, multiplayer }) => {
+export const Stacker = ({
+  color,
+  boardColor,
+  controllable,
+  multiplayer,
+  setMyBoard,
+  setMyPiece,
+  enemyBoard,
+  enemyPiece,
+}) => {
   const [reset, setReset] = useState(false);
   const [gameOver, setGameOver] = useState("");
   const [score, setScore] = useState(0);
@@ -118,6 +127,10 @@ export const Stacker = ({ color, boardColor, controllable, multiplayer }) => {
         reset={reset}
         setReset={setReset}
         multiplayer={multiplayer}
+        setMyBoard={setMyBoard}
+        setMyPiece={setMyPiece}
+        enemyBoard={enemyBoard}
+        enemyPiece={enemyPiece}
       />
       <Typography sx={{ color: Color(color).lighten(0.4).toString(), mt: 2, textAlign: "center" }}>
         Current Score: {score}

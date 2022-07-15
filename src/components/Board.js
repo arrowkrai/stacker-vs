@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import React from "react";
 import Cell from "./Cell";
-import { BOARD_COLOR, CELL_COLOR, COLUMN_AMOUNT, INITIAL_X_POSITION, ROW_AMOUNT } from "./Constants";
+import { COLUMN_AMOUNT, ROW_AMOUNT } from "./Constants";
 import Row from "./Row";
 
 export const moveAcross = (board, piece) => {
@@ -41,28 +41,18 @@ export const moveUser = (board, piece) => {
         board[piece.position.y][i] = true;
       } else {
         nextPieceLength--;
-        // nextPieceLength = 6;
+        // nextPieceLength = 6; // For Debugging
       }
     }
   }
 
   if (nextPieceLength === 0) return "LOSE";
   if (piece.position.y === 0) return "WIN";
-  /* 
-  if the user is above row 0,
-  remove any hanging blocks off the next pieces length
-  
-  also need to change the state of the board here,
-  
-  if the user loses with missing at length 1, return "LOSE"
-  if the user reaches the top of the board, return "WIN"
-  
-  */
+
   return {
     piece: { ...piece, length: nextPieceLength, position: { x: getRandStartXPos(piece), y: piece.position.y - 1 } },
     board: board,
   };
-  // return;
 };
 
 export const Board = ({ color, boardColor, board }) => {

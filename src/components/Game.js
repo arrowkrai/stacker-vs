@@ -1,16 +1,6 @@
-import { Box, Typography } from "@mui/material";
 import React, { useEffect, useReducer } from "react";
 import { Board, moveAcross, moveUser } from "./Board";
-import Cell from "./Cell";
-import {
-  BACKGROUND_COLOR,
-  BOARD_COLOR,
-  CELL_COLOR,
-  COLUMN_AMOUNT,
-  INITIAL_LENGTH,
-  INITIAL_X_POSITION,
-  ROW_AMOUNT,
-} from "./Constants";
+import { COLUMN_AMOUNT, INITIAL_LENGTH, INITIAL_X_POSITION, ROW_AMOUNT } from "./Constants";
 
 export const update = (game, action) => {
   switch (action) {
@@ -184,18 +174,17 @@ const Game = ({
     if (multiplayer) {
       if (game.gameOver === "LOSE") {
         setMyPause(true);
-        removeEventListeners()
+        removeEventListeners();
         setMyPiece(game.piece);
         setTimeout(() => {
           if (!stopGames) setMyPause(false);
-          
         }, 100);
         setTimeout(() => {
           if (!(enemyWin || enemyLose) && !stopGames) {
             dispatch("RESTART");
             setReset(false);
             setGameOver("");
-            addEventListeners()
+            addEventListeners();
           }
         }, 1000);
       }

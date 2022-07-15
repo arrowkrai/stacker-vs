@@ -1,13 +1,5 @@
-import { Box, Button, Modal, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { Board } from "../components/Board";
-import { BACKGROUND_COLOR, BOARD_COLOR, CELL_COLOR } from "../components/Constants";
-import { createBoard } from "../components/Game";
-import { Stacker } from "../components/Stacker";
-import Color from "color";
-import { blue } from "@mui/material/colors";
-import { motion } from "framer-motion";
-import { BrowserRouter, Route, Routes, useParams, Link } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useParams } from "react-router-dom";
 import HomePage from "./HomePage";
 import MultiplayerPage from "./MultiplayerPage";
 const socket = require("../connection/socket").socket;

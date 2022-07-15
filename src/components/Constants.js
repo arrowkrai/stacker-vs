@@ -1,5 +1,5 @@
 import Color from "color";
-import { blue, blueGrey, grey, red } from "@mui/material/colors";
+import { blue, blueGrey, red } from "@mui/material/colors";
 
 const ROW_AMOUNT = 16;
 const COLUMN_AMOUNT = 10;
@@ -26,5 +26,5 @@ export {
   ENEMY_CELL_COLOR,
   ENEMY_BOARD_COLOR,
   ENEMY_BACKGROUND_COLOR,
-  TIMER_SECONDS
+  TIMER_SECONDS,
 };

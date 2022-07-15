@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import React, { createContext, useEffect, useReducer, useState } from "react";
 import { CELL_COLOR, BOARD_COLOR, ENEMY_BOARD_COLOR, ENEMY_CELL_COLOR, TIMER_SECONDS } from "../components/Constants";
 import { Stacker } from "../components/Stacker";
@@ -7,10 +7,14 @@ import MultiplayerModal from "../components/MultiplayerModal";
 import Timer from "../components/Timer";
 import MainBackground from "../components/MainBackground";
 import EnemyBackground from "../components/EnemyBackground";
+import { useNavigate } from "react-router-dom";
+import { grey } from "@mui/material/colors";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import HomeButton from "../components/HomeButton";
+
 const socket = require("../connection/socket").socket;
 export const MyContext = createContext(null);
 export const reducer = (state, action) => {
-  // console.log(action.type);
   switch (action.type) {
     case "GAME_STOP":
       return { ...state, stopGames: true };
@@ -30,7 +34,6 @@ export const reducer = (state, action) => {
       return init(action.payload);
     case "SET_ENEMY":
       const { myBoard, myPiece, myScore, myHighScore, myPause, myWin, myLose } = action.payload;
-      // console.log("SET_ENEMY", action.payload);
       return {
         ...state,
         enemyBoard: myBoard,
@@ -44,13 +47,11 @@ export const reducer = (state, action) => {
     case "MY_WIN_TRUE":
       return { ...state, myWin: true };
     case "MY_WIN_FAIL":
-      // console.log("MY_WIN_FAIL", action.payload);
       return { ...state, myPause: true, myPiece: action.payload };
     case "MY_WIN_FAIL_UNPAUSE":
       return { ...state, myPause: false };
     case "MY_MOVE":
       const { board, piece, points, highScore } = action.payload;
-      // console.log("MY_MOVE", action.payload);
       return { ...state, myBoard: board, myPiece: piece, myScore: points, myHighScore: highScore };
     default:
       return state;
@@ -88,8 +89,14 @@ const MultiplayerPage = ({ gameId, userName }) => {
   const [opponentDidJoinTheGame, setOpponentDidJoinTheGame] = useState(false);
   const [opponentUserName, setOpponentUserName] = useState("");
   const [gameSessionDoesNotExist, setGameSessionDoesNotExist] = useState(false);
+  const navigate = useNavigate();
 
   const [state, dispatch] = useReducer(reducer, init());
+
+  const goHome = (e) => {
+    e.preventDefault();
+    navigate("/");
+  };
 
   useEffect(() => {
     if (state.timeUp) {
@@ -134,10 +141,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
   }, [opponentDidJoinTheGame, state.timer]);
 
   useEffect(() => {
-    // console.log(state.myBoard)
-    // console.log(state.myPiece)
     if (state.myBoard && state.myPiece) {
-      // console.log("emit", state);
       socket.emit("new move", {
         gameId,
         userName,
@@ -154,7 +158,6 @@ const MultiplayerPage = ({ gameId, userName }) => {
 
   useEffect(() => {
     socket.on("opponent move", (move) => {
-      // console.log("move", move);
       if (move.key) {
         if (state.key !== move.key) {
           dispatch({ type: "RESET_WITH_KEY", payload: move.key });
@@ -190,7 +193,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
     });
 
     socket.on("start game", (opponentUserName) => {
-      console.log("START!");
+      // console.log("START!");
       if (opponentUserName !== userName) {
         setOpponentUserName(opponentUserName);
         setOpponentDidJoinTheGame(true);
@@ -201,7 +204,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
 
     socket.on("give userName", (socketId) => {
       if (socket.id !== socketId) {
-        console.log("give userName stage: " + userName);
+        // console.log("give userName stage: " + userName);
         socket.emit("recieved userName", { userName: userName, gameId: gameId });
       }
     });
@@ -209,7 +212,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
     socket.on("get Opponent UserName", (data) => {
       if (socket.id !== data.socketId) {
         setOpponentUserName(data.userName);
-        console.log("data.socketId: data.socketId");
+        // console.log("data.socketId: data.socketId");
         setOpponentSocketId(data.socketId);
         setOpponentDidJoinTheGame(true);
       }
@@ -220,13 +223,20 @@ const MultiplayerPage = ({ gameId, userName }) => {
     <MyContext.Provider value={{ state, dispatch }}>
       <MainBackground key={state.key}>
         <>
-          {/* {console.log("key", state.key)} */}
           {opponentDidJoinTheGame ? (
             <>
+              <HomeButton goHome={goHome} />
               <EnemyBackground />
               {userName === "Player 1" ? (
                 <>
-                  {state.gameOver && <WinLoseBanner gameOver={state.gameOver} resetState={resetState} />}
+                  {state.gameOver && (
+                    <WinLoseBanner
+                      gameOver={state.gameOver}
+                      resetState={resetState}
+                      multiplayer={true}
+                      goHome={goHome}
+                    />
+                  )}
 
                   <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
                     <Box sx={{ mr: 20 }}>
@@ -246,7 +256,12 @@ const MultiplayerPage = ({ gameId, userName }) => {
               ) : userName === "Player 2" ? (
                 <>
                   {state.gameOver && (
-                    <WinLoseBanner gameOver={state.gameOver} resetState={resetState} multiplayer={true} />
+                    <WinLoseBanner
+                      gameOver={state.gameOver}
+                      resetState={resetState}
+                      multiplayer={true}
+                      goHome={goHome}
+                    />
                   )}
 
                   <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
@@ -271,7 +286,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
           ) : gameSessionDoesNotExist ? (
             <Typography sx={{ color: "#fff" }}>The game session could not be found</Typography>
           ) : (
-            <MultiplayerModal domainName={domainName} gameId={gameId} />
+            <MultiplayerModal domainName={domainName} gameId={gameId} goHome={goHome} />
           )}
         </>
       </MainBackground>

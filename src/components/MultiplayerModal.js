@@ -1,8 +1,18 @@
-import { Box, Modal, TextField, Typography } from "@mui/material";
+import { Box, Button, Modal, TextField, Typography } from "@mui/material";
 import "../styles/LoadingDots.css";
 import { Board } from "./Board";
-import { BOARD_COLOR, CELL_COLOR, COLUMN_AMOUNT, ENEMY_BACKGROUND_COLOR, ENEMY_BOARD_COLOR, ENEMY_CELL_COLOR, ROW_AMOUNT } from "./Constants";
-import { blue } from "@mui/material/colors";
+import {
+  BOARD_COLOR,
+  CELL_COLOR,
+  COLUMN_AMOUNT,
+  ENEMY_BACKGROUND_COLOR,
+  ENEMY_BOARD_COLOR,
+  ENEMY_CELL_COLOR,
+  ROW_AMOUNT,
+} from "./Constants";
+import { blue, grey } from "@mui/material/colors";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import HomeButton from "./HomeButton";
 
 const createBoard = () => {
   const board = [];
@@ -15,7 +25,6 @@ const createBoard = () => {
   }
   return board;
 };
-
 
 const style = {
   position: "absolute",
@@ -33,10 +42,11 @@ const style = {
 
 const emptyBoard = createBoard();
 
-const MultiplayerModal = ({ domainName, gameId }) => (
+const MultiplayerModal = ({ domainName, gameId, goHome }) => (
   <>
     <Modal disableEnforceFocus disableAutoFocus open={true}>
       <>
+        <HomeButton goHome={goHome} />
         <Typography
           variant="h1"
           sx={{

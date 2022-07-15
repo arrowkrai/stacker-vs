@@ -2,7 +2,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Box, Button, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { green, red, orange } from "@mui/material/colors";
+import { green, red, orange, blueGrey, grey, blue } from "@mui/material/colors";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const theme = createTheme({
   palette: {
@@ -15,10 +16,13 @@ const theme = createTheme({
     warning: {
       main: orange[800],
     },
+    info: {
+      main: blue[900],
+    },
   },
 });
 
-const WinLoseBanner = ({ gameOver, resetState, multiplayer }) => {
+const WinLoseBanner = ({ gameOver, resetState, multiplayer, goHome }) => {
   const textColor = gameOver === "LOSE" ? red[900] : gameOver === "WIN" ? green[800] : orange[800];
   const buttonType = gameOver === "LOSE" ? "secondary" : gameOver === "WIN" ? "primary" : "warning";
   return (
@@ -48,12 +52,12 @@ const WinLoseBanner = ({ gameOver, resetState, multiplayer }) => {
             boxShadow: "0 0 5px rgba(0, 0, 0, 0.9)",
           }}
           style={{ y: 95, width: "100%", zIndex: 4 }}
-          transition={{ delay: 0.3, duration: 1.5 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
         >
           <Typography
             component={motion.div}
             animate={{ opacity: [0, 1], scale: [0.8, 1], margin: [0, 30] }}
-            transition={{ delay: 0.3, duration: 3.5 }}
+            transition={{ delay: 0.3, duration: 2 }}
             variant="h3"
             style={{ fontSize: 64, fontWeight: 500, color: textColor, zIndex: 4 }}
           >
@@ -64,7 +68,7 @@ const WinLoseBanner = ({ gameOver, resetState, multiplayer }) => {
       <ThemeProvider theme={theme}>
         <Box
           animate={{ y: [-9999, 0] }}
-          transition={{ delay: 2.95, duration: 0.05 }}
+          transition={{ delay: 1.95, duration: 0.05 }}
           component={motion.div}
           style={{ display: "flex", justifyContent: "center", zIndex: 4 }}
         >
@@ -83,7 +87,7 @@ const WinLoseBanner = ({ gameOver, resetState, multiplayer }) => {
             }}
             variant="contained"
             color={buttonType}
-            transition={{ delay: 3, duration: 0.5 }}
+            transition={{ delay: 2, duration: 0.5 }}
           >
             {multiplayer ? "Play Again" : <>{buttonType === "secondary" ? "Try Again" : "Play Again"}</>}
           </Button>

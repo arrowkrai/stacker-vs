@@ -1,11 +1,14 @@
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import Game from "./Game";
 import Color from "color";
 import WinLoseBanner from "./WinLoseBanner";
 import { MyContext } from "../pages/MultiplayerPage";
+import { grey } from "@mui/material/colors";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import HomeButton from "./HomeButton";
 
-export const Stacker = ({ color, boardColor, controllable, multiplayer }) => {
+export const Stacker = ({ color, boardColor, controllable, multiplayer, goHome }) => {
   // const { state } = useContext(MyContext);
   const context = useContext(MyContext);
   var state;
@@ -24,7 +27,6 @@ export const Stacker = ({ color, boardColor, controllable, multiplayer }) => {
       setHighScore(Math.max(score, highScore));
     }
   }, [highScore, score, state?.enemyScore, state?.enemyHighScore]);
-  
 
   const resetState = (e) => {
     e.preventDefault();
@@ -32,7 +34,8 @@ export const Stacker = ({ color, boardColor, controllable, multiplayer }) => {
   };
   return (
     <>
-      {!multiplayer && gameOver && <WinLoseBanner gameOver={gameOver} resetState={resetState} />}
+      {!multiplayer && <HomeButton goHome={goHome} />}
+      {!multiplayer && gameOver && <WinLoseBanner gameOver={gameOver} resetState={resetState} goHome={goHome} />}
       <Game
         color={color}
         boardColor={boardColor}

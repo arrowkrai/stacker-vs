@@ -3,7 +3,22 @@ import React from "react";
 import { Board } from "./Board";
 import { BOARD_COLOR, CELL_COLOR } from "./Constants";
 import { createBoard } from "./Game";
-import { blue } from "@mui/material/colors";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { green, red, orange, blue, blueGrey } from "@mui/material/colors";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: blue[800],
+    },
+    secondary: {
+      main: red[800],
+    },
+    info: {
+      main: blueGrey[900],
+    },
+  },
+});
 
 const style = {
   position: "absolute",
@@ -20,7 +35,7 @@ const style = {
 
 const emptyBoard = createBoard();
 
-const HomeModal = ({ handleSinglePlayer, handleMultiplayer }) => {
+const HomeModal = ({ handleSinglePlayer, handleMultiplayer, goHome }) => {
   return (
     <>
       <Modal disableEnforceFocus disableAutoFocus open={true}>
@@ -41,33 +56,35 @@ const HomeModal = ({ handleSinglePlayer, handleMultiplayer }) => {
             Stacker
           </Typography>
           <Box sx={style}>
-            <Button
-              onClick={handleSinglePlayer}
-              fullWidth
-              variant="contained"
-              sx={{ textTransform: "none", mb: 2, borderRadius: 4 }}
-            >
-              <Box sx={{ my: 1 }}>
-                <Typography sx={{ fontSize: 26, pb: 1 }}>
-                  <strong>Singleplayer</strong>
-                </Typography>
-                <Typography sx={{ fontSize: 14 }}>Can you reach the top?</Typography>
-              </Box>
-            </Button>
-            <Button
-              onClick={handleMultiplayer}
-              color="error"
-              fullWidth
-              variant="contained"
-              sx={{ textTransform: "none", borderRadius: 4 }}
-            >
-              <Box sx={{ my: 1 }}>
-                <Typography sx={{ fontSize: 26, pb: 1 }}>
-                  <strong>Multiplayer</strong>
-                </Typography>
-                <Typography sx={{ fontSize: 14 }}>Stack the most in one minute to win!</Typography>
-              </Box>
-            </Button>
+            <ThemeProvider theme={theme}>
+              <Button
+                onClick={handleSinglePlayer}
+                fullWidth
+                variant="contained"
+                sx={{ textTransform: "none", borderRadius: 4, mb: 2 }}
+              >
+                <Box sx={{ my: 1 }}>
+                  <Typography sx={{ fontSize: 26, pb: 1 }}>
+                    <strong>Singleplayer</strong>
+                  </Typography>
+                  <Typography sx={{ fontSize: 14 }}>Can you reach the top?</Typography>
+                </Box>
+              </Button>
+              <Button
+                onClick={handleMultiplayer}
+                color="error"
+                fullWidth
+                variant="contained"
+                sx={{ textTransform: "none", borderRadius: 4 }}
+              >
+                <Box sx={{ my: 1 }}>
+                  <Typography sx={{ fontSize: 26, pb: 1 }}>
+                    <strong>Multiplayer</strong>
+                  </Typography>
+                  <Typography sx={{ fontSize: 14 }}>Stack the most in one minute to win!</Typography>
+                </Box>
+              </Button>
+            </ThemeProvider>
           </Box>
         </>
       </Modal>

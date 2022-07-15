@@ -1,42 +1,30 @@
 import { Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Game from "./Game";
 import Color from "color";
 import WinLoseBanner from "./WinLoseBanner";
+import { MyContext } from "../pages/MultiplayerPage";
 
-export const Stacker = ({
-  color,
-  boardColor,
-  controllable,
-  multiplayer,
-  stopGames,
-  setMyBoard,
-  setMyPiece,
-  setMyScore,
-  setMyHighScore,
-  setMyPause,
-  setMyWin,
-  setMyLose,
-  enemyBoard,
-  enemyPiece,
-  enemyScore,
-  enemyHighScore,
-  enemyPause,
-  enemyWin,
-  enemyLose,
-}) => {
+export const Stacker = ({ color, boardColor, controllable, multiplayer }) => {
+  // const { state } = useContext(MyContext);
+  const context = useContext(MyContext);
+  var state;
+  if (context) {
+    state = context.state;
+  }
   const [reset, setReset] = useState(false);
   const [gameOver, setGameOver] = useState("");
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   useEffect(() => {
     if (!controllable && multiplayer) {
-      setScore(enemyScore);
-      setHighScore(enemyHighScore);
+      setScore(state.enemyScore);
+      setHighScore(state.enemyHighScore);
     } else {
       setHighScore(Math.max(score, highScore));
     }
-  }, [highScore, score, enemyScore, enemyHighScore]);
+  }, [highScore, score, state?.enemyScore, state?.enemyHighScore]);
+  
 
   const resetState = (e) => {
     e.preventDefault();
@@ -54,20 +42,7 @@ export const Stacker = ({
         reset={reset}
         setReset={setReset}
         multiplayer={multiplayer}
-        stopGames={stopGames}
         highScore={highScore}
-        setMyBoard={setMyBoard}
-        setMyPiece={setMyPiece}
-        setMyScore={setMyScore}
-        setMyHighScore={setMyHighScore}
-        setMyPause={setMyPause}
-        setMyWin={setMyWin}
-        setMyLose={setMyLose}
-        enemyBoard={enemyBoard}
-        enemyPiece={enemyPiece}
-        enemyPause={enemyPause}
-        enemyWin={enemyWin}
-        enemyLose={enemyLose}
       />
       <Typography sx={{ color: Color(color).lighten(0.4).toString(), mt: 2, textAlign: "center" }}>
         Current Score: {score}

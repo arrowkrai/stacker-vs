@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import React, { useEffect, useReducer, useState } from "react";
+import React, { createContext, useEffect, useReducer, useState } from "react";
 import { CELL_COLOR, BOARD_COLOR, ENEMY_BOARD_COLOR, ENEMY_CELL_COLOR, TIMER_SECONDS } from "../components/Constants";
 import { Stacker } from "../components/Stacker";
 import WinLoseBanner from "../components/WinLoseBanner";
@@ -8,17 +8,57 @@ import Timer from "../components/Timer";
 import MainBackground from "../components/MainBackground";
 import EnemyBackground from "../components/EnemyBackground";
 const socket = require("../connection/socket").socket;
-
+export const MyContext = createContext(null);
 export const reducer = (state, action) => {
+  // console.log(action.type);
   switch (action.type) {
-    case "TEST":
-      return {};
+    case "GAME_STOP":
+      return { ...state, stopGames: true };
+    case "GAME_WIN":
+      return { ...state, enemyLose: true, gameOver: "WIN" };
+    case "GAME_LOSE":
+      return { ...state, enemyWin: true, gameOver: "LOSE" };
+    case "GAME_TIE":
+      return { ...state, enemyWin: true, enemyLose: true, gameOver: "TIE" };
+    case "TIMER_TICK":
+      return { ...state, timer: state.timer - 1 };
+    case "TIME_UP":
+      return { ...state, timeUp: true };
+    case "RESET":
+      return init(state.key + 1);
+    case "RESET_WITH_KEY":
+      return init(action.payload);
+    case "SET_ENEMY":
+      const { myBoard, myPiece, myScore, myHighScore, myPause, myWin, myLose } = action.payload;
+      // console.log("SET_ENEMY", action.payload);
+      return {
+        ...state,
+        enemyBoard: myBoard,
+        enemyPiece: myPiece,
+        enemyScore: myScore,
+        enemyHighScore: myHighScore,
+        enemyPause: myPause,
+        enemyWin: myWin,
+        enemyLose: myLose,
+      };
+    case "MY_WIN_TRUE":
+      return { ...state, myWin: true };
+    case "MY_WIN_FAIL":
+      // console.log("MY_WIN_FAIL", action.payload);
+      return { ...state, myPause: true, myPiece: action.payload };
+    case "MY_WIN_FAIL_UNPAUSE":
+      return { ...state, myPause: false };
+    case "MY_MOVE":
+      const { board, piece, points, highScore } = action.payload;
+      // console.log("MY_MOVE", action.payload);
+      return { ...state, myBoard: board, myPiece: piece, myScore: points, myHighScore: highScore };
     default:
-      throw new Error("Unhandled Action");
+      return state;
+    // throw new Error(`Unhandled Action ${action.type}`);
   }
 };
 
-const init = () => {
+const init = (resetKey = 1) => {
   return {
     myBoard: [],
     myPiece: {},
@@ -38,138 +78,89 @@ const init = () => {
     timeUp: false,
     gameOver: "",
     stopGames: false,
-    key: 1,
+    key: resetKey,
   };
 };
 
 const MultiplayerPage = ({ gameId, userName }) => {
   const domainName = "http://localhost:3000";
   const [opponentSocketId, setOpponentSocketId] = useState("");
-  const [opponentDidJoinTheGame, didJoinGame] = useState(false);
-  const [opponentUserName, setUserName] = useState("");
-  const [gameSessionDoesNotExist, doesntExist] = useState(false);
+  const [opponentDidJoinTheGame, setOpponentDidJoinTheGame] = useState(false);
+  const [opponentUserName, setOpponentUserName] = useState("");
+  const [gameSessionDoesNotExist, setGameSessionDoesNotExist] = useState(false);
 
-  const [myBoard, setMyBoard] = useState([]);
-  const [myPiece, setMyPiece] = useState({});
-  const [myScore, setMyScore] = useState(0);
-  const [myHighScore, setMyHighScore] = useState(0);
-  const [myPause, setMyPause] = useState(false);
-  const [myWin, setMyWin] = useState(false);
-  const [myLose, setMyLose] = useState(false);
-  const [enemyBoard, setEnemyBoard] = useState([]);
-  const [enemyPiece, setEnemyPiece] = useState({});
-  const [enemyScore, setEnemyScore] = useState(0);
-  const [enemyHighScore, setEnemyHighScore] = useState(0);
-  const [enemyPause, setEnemyPause] = useState(false);
-  const [enemyWin, setEnemyWin] = useState(false);
-  const [enemyLose, setEnemyLose] = useState(false);
-  const [timer, setTimer] = useState(TIMER_SECONDS);
-  const [timeUp, setTimeUp] = useState(false);
-  const [gameOver, setGameOver] = useState("");
-  const [stopGames, setStopGames] = useState(false);
-  const [key, setKey] = useState(1);
-
-  const [state, multiDispatch] = useReducer(reducer, init());
+  const [state, dispatch] = useReducer(reducer, init());
 
   useEffect(() => {
-    if (timeUp) {
-      setStopGames(true);
+    if (state.timeUp) {
+      dispatch({ type: "GAME_STOP" });
 
       setTimeout(() => {
-        if (myHighScore > enemyHighScore) {
-          setEnemyLose(true);
-          setGameOver("WIN");
-        } else if (myHighScore < enemyHighScore) {
-          setEnemyWin(true);
-          setGameOver("LOSE");
+        if (state.myHighScore > state.enemyHighScore) {
+          dispatch({ type: "GAME_WIN" });
+        } else if (state.myHighScore < state.enemyHighScore) {
+          dispatch({ type: "GAME_LOSE" });
         } else {
-          setEnemyWin(true);
-          setEnemyLose(true);
-          setGameOver("TIE");
+          dispatch({ type: "GAME_TIE" });
         }
       }, 1000);
     }
-  }, [timeUp]);
-
-  const resetAll = (resetKey) => {
-    setStopGames(false);
-    setMyBoard([]);
-    setMyPiece({});
-    setMyScore(0);
-    setMyHighScore(0);
-    setMyPause(false);
-    setMyWin(false);
-    setMyLose(false);
-    setEnemyBoard([]);
-    setEnemyPiece({});
-    setEnemyScore(0);
-    setEnemyHighScore(0);
-    setEnemyPause(false);
-    setEnemyWin(false);
-    setEnemyLose(false);
-    setTimer(TIMER_SECONDS);
-    setTimeUp(false);
-    setGameOver("");
-    didJoinGame(true);
-    setKey(resetKey);
-  };
+  }, [state.timeUp]);
 
   const resetState = (e) => {
     e.preventDefault();
     socket.emit("new move", {
       gameId,
-      key: key + 1,
+      key: state.key + 1,
     });
-    resetAll(key + 1);
+    dispatch({ type: "RESET" });
   };
 
   useEffect(() => {
     let interval;
     if (opponentDidJoinTheGame) {
       interval = window.setInterval(() => {
-        if (timer > 0) setTimer(timer - 1);
+        if (state.timer > 0) dispatch({ type: "TIMER_TICK" });
       }, 1000);
     }
-    if (timer === 0) {
+    if (state.timer === 0) {
       setTimeout(() => {
-        setTimeUp(true);
+        dispatch({ type: "TIME_UP" });
       }, 1000);
     }
     return () => {
       window.clearInterval(interval);
     };
-  }, [opponentDidJoinTheGame, timer]);
+  }, [opponentDidJoinTheGame, state.timer]);
 
   useEffect(() => {
-    if (myBoard && myPiece) {
+    // console.log(state.myBoard)
+    // console.log(state.myPiece)
+    if (state.myBoard && state.myPiece) {
+      // console.log("emit", state);
       socket.emit("new move", {
         gameId,
         userName,
-        myBoard,
-        myPiece,
-        myScore,
-        myHighScore,
-        myPause,
-        myWin,
-        myLose,
+        myBoard: state.myBoard,
+        myPiece: state.myPiece,
+        myScore: state.myScore,
+        myHighScore: state.myHighScore,
+        myPause: state.myPause,
+        myWin: state.myWin,
+        myLose: state.myLose,
       });
     }
-  }, [myBoard, myPiece, myPause, myScore, myWin, myLose]);
+  }, [state.myBoard, state.myPiece, state.myPause, state.myScore, state.myWin, state.myLose]);
 
   useEffect(() => {
     socket.on("opponent move", (move) => {
+      // console.log("move", move);
       if (move.key) {
-        if (key !== move.key) {
-          resetAll(move.key);
+        if (state.key !== move.key) {
+          dispatch({ type: "RESET_WITH_KEY", payload: move.key });
         }
       } else if (move.myBoard.length > 0 && move.userName !== userName) {
-        setEnemyBoard(move.myBoard);
-        setEnemyPiece(move.myPiece);
-        setEnemyScore(move.myScore);
-        setEnemyHighScore(move.myHighScore);
-        setEnemyPause(move.myPause);
-        setEnemyWin(move.myWin);
-        setEnemyLose(move.myLose);
+        dispatch({ type: "SET_ENEMY", payload: move });
       }
     });
 
@@ -194,15 +185,15 @@ const MultiplayerPage = ({ gameId, userName }) => {
         statusUpdate === "This game session does not exist." ||
         statusUpdate === "There are already 2 people playing in this room."
       ) {
-        doesntExist(true);
+        setGameSessionDoesNotExist(true);
       }
     });
 
     socket.on("start game", (opponentUserName) => {
       console.log("START!");
       if (opponentUserName !== userName) {
-        setUserName(opponentUserName);
-        didJoinGame(true);
+        setOpponentUserName(opponentUserName);
+        setOpponentDidJoinTheGame(true);
       } else {
         socket.emit("request username", gameId);
       }
@@ -217,140 +208,74 @@ const MultiplayerPage = ({ gameId, userName }) => {
 
     socket.on("get Opponent UserName", (data) => {
       if (socket.id !== data.socketId) {
-        setUserName(data.userName);
+        setOpponentUserName(data.userName);
         console.log("data.socketId: data.socketId");
         setOpponentSocketId(data.socketId);
-        didJoinGame(true);
+        setOpponentDidJoinTheGame(true);
       }
     });
   }, []);
 
   return (
-    <MainBackground key={key}>
-      <>
-        {console.log("key", key)}
-        {opponentDidJoinTheGame ? (
-          <>
-            <EnemyBackground />
-            {userName === "Player 1" ? (
-              <>
-                {gameOver && <WinLoseBanner gameOver={gameOver} resetState={resetState} />}
+    <MyContext.Provider value={{ state, dispatch }}>
+      <MainBackground key={state.key}>
+        <>
+          {/* {console.log("key", state.key)} */}
+          {opponentDidJoinTheGame ? (
+            <>
+              <EnemyBackground />
+              {userName === "Player 1" ? (
+                <>
+                  {state.gameOver && <WinLoseBanner gameOver={state.gameOver} resetState={resetState} />}
 
-                <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
-                  <Box sx={{ mr: 20 }}>
-                    <Stacker
-                      color={CELL_COLOR}
-                      boardColor={BOARD_COLOR}
-                      controllable={true}
-                      multiplayer={true}
-                      stopGames={stopGames}
-                      setMyBoard={setMyBoard}
-                      setMyPiece={setMyPiece}
-                      setMyScore={setMyScore}
-                      setMyHighScore={setMyHighScore}
-                      setMyPause={setMyPause}
-                      setMyWin={setMyWin}
-                      setMyLose={setMyLose}
-                      enemyBoard={enemyBoard}
-                      enemyPiece={enemyPiece}
-                      enemyScore={enemyScore}
-                      enemyHighScore={enemyHighScore}
-                      enemyPause={enemyPause}
-                      enemyWin={enemyWin}
-                      enemyLose={enemyLose}
-                    />
+                  <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
+                    <Box sx={{ mr: 20 }}>
+                      <Stacker color={CELL_COLOR} boardColor={BOARD_COLOR} controllable={true} multiplayer={true} />
+                    </Box>
+                    <Box>
+                      <Stacker
+                        color={ENEMY_CELL_COLOR}
+                        boardColor={ENEMY_BOARD_COLOR}
+                        controllable={false}
+                        multiplayer={true}
+                      />
+                    </Box>
                   </Box>
-                  <Box>
-                    <Stacker
-                      color={ENEMY_CELL_COLOR}
-                      boardColor={ENEMY_BOARD_COLOR}
-                      controllable={false}
-                      multiplayer={true}
-                      stopGames={stopGames}
-                      setMyBoard={setMyBoard}
-                      setMyPiece={setMyPiece}
-                      setMyScore={setMyScore}
-                      setMyHighScore={setMyHighScore}
-                      setMyPause={setMyPause}
-                      setMyWin={setMyWin}
-                      setMyLose={setMyLose}
-                      enemyBoard={enemyBoard}
-                      enemyPiece={enemyPiece}
-                      enemyScore={enemyScore}
-                      enemyHighScore={enemyHighScore}
-                      enemyPause={enemyPause}
-                      enemyWin={enemyWin}
-                      enemyLose={enemyLose}
-                    />
-                  </Box>
-                </Box>
-                <Timer>{timer}</Timer>
-              </>
-            ) : userName === "Player 2" ? (
-              <>
-                {gameOver && <WinLoseBanner gameOver={gameOver} resetState={resetState} multiplayer={true} />}
+                  <Timer>{state.timer}</Timer>
+                </>
+              ) : userName === "Player 2" ? (
+                <>
+                  {state.gameOver && (
+                    <WinLoseBanner gameOver={state.gameOver} resetState={resetState} multiplayer={true} />
+                  )}
 
-                <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
-                  <Box sx={{ mr: 20 }}>
-                    <Stacker
-                      color={CELL_COLOR}
-                      boardColor={BOARD_COLOR}
-                      controllable={false}
-                      multiplayer={true}
-                      stopGames={stopGames}
-                      setMyBoard={setMyBoard}
-                      setMyPiece={setMyPiece}
-                      setMyScore={setMyScore}
-                      setMyHighScore={setMyHighScore}
-                      setMyPause={setMyPause}
-                      setMyWin={setMyWin}
-                      setMyLose={setMyLose}
-                      enemyBoard={enemyBoard}
-                      enemyPiece={enemyPiece}
-                      enemyScore={enemyScore}
-                      enemyHighScore={enemyHighScore}
-                      enemyPause={enemyPause}
-                      enemyWin={enemyWin}
-                      enemyLose={enemyLose}
-                    />
+                  <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
+                    <Box sx={{ mr: 20 }}>
+                      <Stacker color={CELL_COLOR} boardColor={BOARD_COLOR} controllable={false} multiplayer={true} />
+                    </Box>
+                    <Box>
+                      <Stacker
+                        color={ENEMY_CELL_COLOR}
+                        boardColor={ENEMY_BOARD_COLOR}
+                        controllable={true}
+                        multiplayer={true}
+                      />
+                    </Box>
                   </Box>
-                  <Box>
-                    <Stacker
-                      color={ENEMY_CELL_COLOR}
-                      boardColor={ENEMY_BOARD_COLOR}
-                      controllable={true}
-                      multiplayer={true}
-                      stopGames={stopGames}
-                      setMyBoard={setMyBoard}
-                      setMyPiece={setMyPiece}
-                      setMyScore={setMyScore}
-                      setMyHighScore={setMyHighScore}
-                      setMyPause={setMyPause}
-                      setMyWin={setMyWin}
-                      setMyLose={setMyLose}
-                      enemyBoard={enemyBoard}
-                      enemyPiece={enemyPiece}
-                      enemyScore={enemyScore}
-                      enemyHighScore={enemyHighScore}
-                      enemyPause={enemyPause}
-                      enemyWin={enemyWin}
-                      enemyLose={enemyLose}
-                    />
-                  </Box>
-                </Box>
-                <Timer>{timer}</Timer>
-              </>
-            ) : (
-              <Typography color="error">An error occured: Invalid Username</Typography>
-            )}
-          </>
-        ) : gameSessionDoesNotExist ? (
-          <Typography sx={{ color: "#fff" }}>The game session could not be found</Typography>
-        ) : (
-          <MultiplayerModal domainName={domainName} gameId={gameId} />
-        )}
-      </>
-    </MainBackground>
+                  <Timer>{state.timer}</Timer>
+                </>
+              ) : (
+                <Typography color="error">An error occured: Invalid Username</Typography>
+              )}
+            </>
+          ) : gameSessionDoesNotExist ? (
+            <Typography sx={{ color: "#fff" }}>The game session could not be found</Typography>
+          ) : (
+            <MultiplayerModal domainName={domainName} gameId={gameId} />
+          )}
+        </>
+      </MainBackground>
+    </MyContext.Provider>
   );
 };
 

@@ -1,9 +1,20 @@
 import { Box, Modal, TextField, Typography } from "@mui/material";
 import "../styles/LoadingDots.css";
 import { Board } from "./Board";
-import { BOARD_COLOR, CELL_COLOR, ENEMY_BACKGROUND_COLOR, ENEMY_BOARD_COLOR, ENEMY_CELL_COLOR } from "./Constants";
-import { createBoard } from "./Game";
+import { BOARD_COLOR, CELL_COLOR, COLUMN_AMOUNT, ENEMY_BACKGROUND_COLOR, ENEMY_BOARD_COLOR, ENEMY_CELL_COLOR, ROW_AMOUNT } from "./Constants";
 import { blue } from "@mui/material/colors";
+
+const createBoard = () => {
+  const board = [];
+  for (let i = 0; i < ROW_AMOUNT; i++) {
+    const row = [];
+    for (let j = 0; j < COLUMN_AMOUNT; j++) {
+      row.push(false);
+    }
+    board.push(row);
+  }
+  return board;
+};
 
 
 const style = {

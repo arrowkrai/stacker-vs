@@ -1,6 +1,7 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useContext, useEffect, useReducer } from "react";
 import { Board, moveAcross, moveUser } from "./Board";
 import { COLUMN_AMOUNT, INITIAL_LENGTH, INITIAL_X_POSITION, ROW_AMOUNT } from "./Constants";
+import { MyContext } from "../pages/MultiplayerPage";
 
 export const update = (game, action) => {
   switch (action) {
@@ -100,103 +101,86 @@ const renderBoard = (board, piece) => {
 
 export const getActiveRow = (game) => ROW_AMOUNT - game.piece.position.y;
 
-const userListener = (input, dispatch) => {
+const userListener = (input, gameDispatch) => {
   switch (input) {
     case "CLICK":
-      dispatch("MOVE_USER");
+      gameDispatch("MOVE_USER");
       break;
     case "PAUSE":
-      dispatch("TOGGLE_PAUSE");
+      gameDispatch("TOGGLE_PAUSE");
       break;
     default:
       throw new Error("Unhandled User input");
   }
 };
 
-const addEventListeners = (dispatch, multiplayer) => {
+const addEventListeners = (gameDispatch, multiplayer) => {
   if (!multiplayer) {
-    window.addEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", dispatch));
+    window.addEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", gameDispatch));
   }
-  window.addEventListener("mousedown", (e) => userListener("CLICK", dispatch));
-  window.addEventListener("keydown", (e) => e.code === "Space" && userListener("CLICK", dispatch));
-  window.addEventListener("keydown", (e) => e.code === "ArrowDown" && userListener("CLICK", dispatch));
+  window.addEventListener("mousedown", (e) => userListener("CLICK", gameDispatch));
+  window.addEventListener("keydown", (e) => e.code === "Space" && userListener("CLICK", gameDispatch));
+  window.addEventListener("keydown", (e) => e.code === "ArrowDown" && userListener("CLICK", gameDispatch));
 };
 
-const removeEventListeners = (dispatch, multiplayer) => {
+const removeEventListeners = (gameDispatch, multiplayer) => {
   if (!multiplayer) {
-    window.removeEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", dispatch));
+    window.removeEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", gameDispatch));
   }
-  window.removeEventListener("mousedown", () => userListener("MOUSEDOWN", dispatch));
-  window.removeEventListener("keydown", (e) => e.code === "Space" && userListener("CLICK", dispatch));
-  window.removeEventListener("keydown", (e) => e.code === "ArrowDown" && userListener("CLICK", dispatch));
+  window.removeEventListener("mousedown", () => userListener("MOUSEDOWN", gameDispatch));
+  window.removeEventListener("keydown", (e) => e.code === "Space" && userListener("CLICK", gameDispatch));
+  window.removeEventListener("keydown", (e) => e.code === "ArrowDown" && userListener("CLICK", gameDispatch));
 };
 
 const tickRate = (activeRow) => 110 - 4.8 * activeRow - activeRow ** 1.05;
-const Game = ({
-  color,
-  boardColor,
-  setGameOver,
-  setScore,
-  reset,
-  setReset,
-  controllable,
-  multiplayer,
-  stopGames,
-  highScore,
-  setMyBoard,
-  setMyPiece,
-  setMyScore,
-  setMyHighScore,
-  setMyPause,
-  setMyWin,
-  setMyLose,
-  enemyBoard,
-  enemyPiece,
-  enemyPause,
-  enemyWin,
-  enemyLose,
-}) => {
-  const [game, dispatch] = useReducer(update, init());
+const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset, controllable, multiplayer, highScore }) => {
+  const [game, gameDispatch] = useReducer(update, init());
+  const context = useContext(MyContext);
+  var state;
+  var dispatch;
+  if (context) {
+    state = context.state;
+    dispatch = context.dispatch;
+  }
 
   useEffect(() => {
     if (multiplayer) {
       if (game.gameOver === "WIN") {
-        setMyWin(true);
+        dispatch({ type: "MY_WIN_TRUE" });
       }
 
-      if (enemyWin || enemyLose) {
-        dispatch("PAUSE");
+      if (state.enemyWin || state.enemyLose) {
+        gameDispatch("PAUSE");
       }
     }
-  }, [enemyWin, enemyLose]);
+  }, [state?.enemyWin, state?.enemyLose]);
 
   useEffect(() => {
     if (multiplayer) {
       if (game.gameOver === "LOSE") {
-        setMyPause(true);
-        removeEventListeners();
-        setMyPiece(game.piece);
+        dispatch({ type: "MY_WIN_FAIL", payload: game.piece });
+        removeEventListeners(gameDispatch, multiplayer);
         setTimeout(() => {
-          if (!stopGames) setMyPause(false);
+          if (!state.stopGames) dispatch({ type: "MY_WIN_FAIL_UNPAUSE" });
         }, 100);
         setTimeout(() => {
-          if (!(enemyWin || enemyLose) && !stopGames) {
-            dispatch("RESTART");
+          if (!(state.enemyWin || state.enemyLose) && !state.stopGames) {
+            gameDispatch("RESTART");
             setReset(false);
             setGameOver("");
-            addEventListeners();
+            addEventListeners(gameDispatch, multiplayer);
           }
         }, 1000);
       }
     }
-  }, [game, dispatch, multiplayer, setReset, setGameOver]);
+  }, [game, gameDispatch, multiplayer, setReset, setGameOver]);
 
   let activeRow = getActiveRow(game);
   useEffect(() => {
     let interval;
     if (game.state === "PLAYING") {
       interval = window.setInterval(() => {
-        dispatch("TICK");
+        gameDispatch("TICK");
       }, tickRate(activeRow));
     }
     return () => {
@@ -206,10 +190,10 @@ const Game = ({
 
   useEffect(() => {
     if (controllable) {
-      addEventListeners(dispatch, multiplayer);
+      addEventListeners(gameDispatch, multiplayer);
     }
     return () => {
-      removeEventListeners(dispatch, multiplayer);
+      removeEventListeners(gameDispatch, multiplayer);
     };
   }, []);
 
@@ -224,45 +208,42 @@ const Game = ({
   }, [setScore, game.points]);
 
   useEffect(() => {
-    dispatch("RESTART");
+    gameDispatch("RESTART");
     setReset(false);
     setGameOver("");
   }, [reset, setReset, setGameOver]);
 
   useEffect(() => {
     if (multiplayer && controllable) {
-      setMyBoard(game.board);
-      setMyPiece(game.piece);
-      setMyScore(game.points);
-      setMyHighScore(Math.max(highScore, game.points));
+      dispatch({ type: "MY_MOVE", payload: { ...game, highScore: Math.max(highScore, game.points) } });
     }
   }, [game.points]);
 
   useEffect(() => {
     if (multiplayer && !controllable) {
-      if (enemyBoard.length && enemyPiece) {
-        game.board = enemyBoard;
-        game.piece = enemyPiece;
+      if (state?.enemyBoard?.length && state?.enemyPiece) {
+        game.board = state.enemyBoard;
+        game.piece = state.enemyPiece;
       }
     }
-  }, [enemyBoard]);
+  }, [state?.enemyBoard]);
 
   useEffect(() => {
     if (multiplayer && !controllable) {
-      if (enemyPause) {
-        dispatch("PAUSE");
+      if (state.enemyPause) {
+        gameDispatch("PAUSE");
         setTimeout(() => {
-          dispatch("RESUME");
+          gameDispatch("RESUME");
         }, 1000);
       }
     }
-  }, [enemyPause, game.state]);
+  }, [state?.enemyPause, game.state]);
   useEffect(() => {
-    if (stopGames) {
-      dispatch("PAUSE");
+    if (state?.stopGames) {
+      gameDispatch("PAUSE");
       removeEventListeners();
     }
-  }, [stopGames]);
+  }, [state?.stopGames]);
 
   const viewBoard = renderBoard(game.board, game.piece);
 

@@ -160,16 +160,12 @@ const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset, contr
     if (multiplayer) {
       if (game.gameOver === "LOSE") {
         dispatch({ type: "MY_WIN_FAIL", payload: game.piece });
-        removeEventListeners(gameDispatch, multiplayer);
         setTimeout(() => {
           if (!state.stopGames) dispatch({ type: "MY_WIN_FAIL_UNPAUSE" });
         }, 100);
         setTimeout(() => {
           if (!(state.enemyWin || state.enemyLose) && !state.stopGames) {
             gameDispatch("RESTART");
-            setReset(false);
-            setGameOver("");
-            addEventListeners(gameDispatch, multiplayer);
           }
         }, 1000);
       }

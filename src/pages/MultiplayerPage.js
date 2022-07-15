@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { CELL_COLOR, BOARD_COLOR, ENEMY_BOARD_COLOR, ENEMY_CELL_COLOR, TIMER_SECONDS } from "../components/Constants";
 import { Stacker } from "../components/Stacker";
 import WinLoseBanner from "../components/WinLoseBanner";
@@ -9,12 +9,46 @@ import MainBackground from "../components/MainBackground";
 import EnemyBackground from "../components/EnemyBackground";
 const socket = require("../connection/socket").socket;
 
+export const reducer = (state, action) => {
+  switch (action.type) {
+    case "TEST":
+      return {};
+    default:
+      throw new Error("Unhandled Action");
+  }
+};
+
+const init = () => {
+  return {
+    myBoard: [],
+    myPiece: {},
+    myScore: 0,
+    myHighScore: 0,
+    myPause: false,
+    myWin: false,
+    myLose: false,
+    enemyBoard: [],
+    enemyPiece: {},
+    enemyScore: 0,
+    enemyHighScore: 0,
+    enemyPause: false,
+    enemyWin: false,
+    enemyLose: false,
+    timer: TIMER_SECONDS,
+    timeUp: false,
+    gameOver: "",
+    stopGames: false,
+    key: 1,
+  };
+};
+
 const MultiplayerPage = ({ gameId, userName }) => {
   const domainName = "http://localhost:3000";
   const [opponentSocketId, setOpponentSocketId] = useState("");
   const [opponentDidJoinTheGame, didJoinGame] = useState(false);
   const [opponentUserName, setUserName] = useState("");
   const [gameSessionDoesNotExist, doesntExist] = useState(false);
+
   const [myBoard, setMyBoard] = useState([]);
   const [myPiece, setMyPiece] = useState({});
   const [myScore, setMyScore] = useState(0);
@@ -34,6 +68,8 @@ const MultiplayerPage = ({ gameId, userName }) => {
   const [gameOver, setGameOver] = useState("");
   const [stopGames, setStopGames] = useState(false);
   const [key, setKey] = useState(1);
+
+  const [state, multiDispatch] = useReducer(reducer, init());
 
   useEffect(() => {
     if (timeUp) {

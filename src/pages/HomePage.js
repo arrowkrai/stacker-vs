@@ -47,18 +47,8 @@ const HomePage = ({ setUsername }) => {
   };
   const handleMultiplayer = (e) => {
     e.preventDefault();
-
-    // TODO: Show Spinner and if longer than 5 seconds,
-    // show message saying if it takes longer than 10 seconds,
-    // reloading the web page may fix it, however the server may be down
-
     multiplayerRedirect(uuidv4());
   };
-
-  // TODO: WHEN BUTTON IS PRESSED, ANIMATE, THEN NAVIGATE AFTER ANIMATION
-  // so i'm guessing its probably just setTimeout(navigate, 4000) then start animating
-  // for singleplayer, can probably just setGameMode to SINGLEPLAYER
-  // for multiplayer, navigate after
 
   return (
     <Box
@@ -74,12 +64,9 @@ const HomePage = ({ setUsername }) => {
       }}
     >
       {gameMode === "SINGLEPLAYER" ? (
-        <Stacker color={CELL_COLOR} boardColor={BOARD_COLOR} controllable={true} multiplayer={false}/>
+        <Stacker color={CELL_COLOR} boardColor={BOARD_COLOR} controllable={true} multiplayer={false} />
       ) : gameMode === "MULTIPLAYER" ? null : (
         <>
-          {/* Overlay may need this for animation */}
-          {/* <Box sx={{ backgroundColor:"#000", minHeight:"100vh", width:"100%", opacity: 0.5, zIndex:2 }} /> */}
-
           <Modal
             disableEnforceFocus
             disableAutoFocus

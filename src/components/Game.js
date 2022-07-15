@@ -151,6 +151,7 @@ const Game = ({
   setReset,
   controllable,
   multiplayer,
+  stopGames,
   highScore,
   setMyBoard,
   setMyPiece,
@@ -183,15 +184,18 @@ const Game = ({
     if (multiplayer) {
       if (game.gameOver === "LOSE") {
         setMyPause(true);
+        removeEventListeners()
         setMyPiece(game.piece);
         setTimeout(() => {
-          setMyPause(false);
+          if (!stopGames) setMyPause(false);
+          
         }, 100);
         setTimeout(() => {
-          if (!(enemyWin || enemyLose)) {
+          if (!(enemyWin || enemyLose) && !stopGames) {
             dispatch("RESTART");
             setReset(false);
             setGameOver("");
+            addEventListeners()
           }
         }, 1000);
       }
@@ -264,6 +268,12 @@ const Game = ({
       }
     }
   }, [enemyPause, game.state]);
+  useEffect(() => {
+    if (stopGames) {
+      dispatch("PAUSE");
+      removeEventListeners();
+    }
+  }, [stopGames]);
 
   const viewBoard = renderBoard(game.board, game.piece);
 

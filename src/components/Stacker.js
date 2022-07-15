@@ -26,6 +26,7 @@ export const Stacker = ({
   boardColor,
   controllable,
   multiplayer,
+  stopGames,
   setMyBoard,
   setMyPiece,
   setMyScore,
@@ -63,7 +64,7 @@ export const Stacker = ({
   };
   return (
     <>
-      {multiplayer && gameOver && (
+      {!multiplayer && gameOver && (
         <>
           <Box
             component={motion.div}
@@ -140,6 +141,7 @@ export const Stacker = ({
         reset={reset}
         setReset={setReset}
         multiplayer={multiplayer}
+        stopGames={stopGames}
         highScore={highScore}
         setMyBoard={setMyBoard}
         setMyPiece={setMyPiece}

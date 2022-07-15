@@ -73,29 +73,37 @@ const MultiplayerPage = ({ gameId, userName }) => {
   const [timer, setTimer] = useState(TIMER_SECONDS);
   const [timeUp, setTimeUp] = useState(false);
   const [gameOver, setGameOver] = useState("");
-  const [key, setKey] = useState(1)
+  const [stopGames, setStopGames] = useState(false);
+  const [key, setKey] = useState(1);
 
   useEffect(() => {
     if (timeUp) {
-      if (enemyWin && enemyLose) {
-        setGameOver("TIE");
-      } else if (enemyWin) {
-        setGameOver("LOSE");
-      } else if (enemyLose) {
-        setGameOver("WIN");
-      } else {
-        console.log("enemyWin", enemyWin) 
-        console.log("enemyLose", enemyLose)
-        console.log("Unhandled multiplayer game over condition");
-      }
+      setStopGames(true);
+
+      setTimeout(() => {
+        if (myHighScore > enemyHighScore) {
+          setEnemyLose(true);
+          setGameOver("WIN");
+        } else if (myHighScore < enemyHighScore) {
+          setEnemyWin(true);
+          setGameOver("LOSE");
+        } else {
+          setEnemyWin(true);
+          setEnemyLose(true);
+          setGameOver("TIE");
+        }
+        // console.log("enemyWin", enemyWin);
+        // console.log("enemyLose", enemyLose);
+        // console.log("gameOver", gameOver);
+      }, 1000);
     }
-  }, [enemyWin, enemyLose, timeUp]);
+  }, [timeUp]);
 
   const textColor = gameOver === "LOSE" ? red[900] : gameOver === "WIN" ? green[800] : orange[800];
   const buttonType = gameOver === "LOSE" ? "secondary" : gameOver === "WIN" ? "primary" : "warning";
 
-  const resetAll = () => {
-
+  const resetAll = (resetKey) => {
+    setStopGames(false);
     setMyBoard([]);
     setMyPiece({});
     setMyScore(0);
@@ -113,28 +121,19 @@ const MultiplayerPage = ({ gameId, userName }) => {
     setTimer(TIMER_SECONDS);
     setTimeUp(false);
     setGameOver("");
-    didJoinGame(true)
-    setKey(key+1)
-    console.log("resetAll")
-
+    didJoinGame(true);
+    setKey(resetKey);
+    // console.log("resetAll");
   };
 
   const resetState = (e) => {
     e.preventDefault();
-    socket.emit('new move', {
+    socket.emit("new move", {
       gameId,
-      userName,
-      myBoard,
-      myPiece,
-      myScore,
-      myHighScore,
-      myPause,
-      myWin,
-      myLose,
-      key: key+1
-    })
-    console.log("resetState")
-    resetAll();
+      key: key + 1,
+    });
+    // console.log("resetState");
+    resetAll(key + 1);
   };
 
   useEffect(() => {
@@ -146,17 +145,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
     }
     if (timer === 0) {
       setTimeout(() => {
-        console.log("Times Up");
         setTimeUp(true);
-        // TODO: Stop both games, determine winner, show YOU WIN to winner
-        if (myHighScore > enemyHighScore) {
-          setEnemyLose(true);
-        } else if (myHighScore < enemyHighScore) {
-          setEnemyWin(true);
-        } else {
-          setEnemyWin(true);
-          setEnemyLose(true);
-        }
       }, 1000);
     }
     return () => {
@@ -165,7 +154,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
   }, [opponentDidJoinTheGame, timer]);
 
   useEffect(() => {
-    if ((myBoard && myPiece)) {
+    if (myBoard && myPiece) {
       socket.emit("new move", {
         gameId,
         userName,
@@ -182,31 +171,13 @@ const MultiplayerPage = ({ gameId, userName }) => {
 
   useEffect(() => {
     socket.on("opponent move", (move) => {
-
       if (move.key) {
-
         if (key !== move.key) {
-  
-          // socket.emit('new move', {
-          //   gameId,
-          //   userName,
-          //   myBoard,
-          //   myPiece,
-          //   myScore,
-          //   myHighScore,
-          //   myPause,
-          //   myWin,
-          //   myLose,
-          //   resetGames: true
-          // })
-
-          resetAll();
-  
+          // setKey(move.key)
+          resetAll(move.key);
+          // console.log("opponent move key");
         }
-      }
-      
-
-      if (move.myBoard.length > 0 && move.userName !== userName) {
+      } else if (move.myBoard.length > 0 && move.userName !== userName) {
         setEnemyBoard(move.myBoard);
         setEnemyPiece(move.myPiece);
         setEnemyScore(move.myScore);
@@ -214,6 +185,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
         setEnemyPause(move.myPause);
         setEnemyWin(move.myWin);
         setEnemyLose(move.myLose);
+        // console.log("opponent move else");
       }
     });
 
@@ -271,7 +243,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
 
   return (
     <Box
-    key={key}
+      key={key}
       sx={{
         minHeight: "100vh",
         backgroundColor: BACKGROUND_COLOR,
@@ -284,292 +256,294 @@ const MultiplayerPage = ({ gameId, userName }) => {
       }}
     >
       <>
+        {console.log("key", key)}
         {opponentDidJoinTheGame ? (
           <>
-            
-              <React.Fragment>
-            
-                <Box
-                  sx={{
-                    backgroundColor: ENEMY_BACKGROUND_COLOR,
-                    position: "absolute",
-                    minHeight: "100vh",
-                    width: "50%",
-                    right: 0,
-                    top: 0,
-                    opacity: 0.5,
-                    zIndex: 2,
-                  }}
-                />
-                {userName === "Player 1" ? (
-                  <>
-                    {gameOver && (
-                      <>
+            <React.Fragment>
+              <Box
+                sx={{
+                  backgroundColor: ENEMY_BACKGROUND_COLOR,
+                  position: "absolute",
+                  minHeight: "100vh",
+                  width: "50%",
+                  right: 0,
+                  top: 0,
+                  opacity: 0.5,
+                  zIndex: 2,
+                }}
+              />
+              {userName === "Player 1" ? (
+                <>
+                  {gameOver && (
+                    <>
+                      <Box
+                        component={motion.div}
+                        animate={{
+                          opacity: [0, 1],
+                        }}
+                        style={{
+                          opacity: 0,
+                          position: "absolute",
+                          top: "20%",
+                          textAlign: "center",
+                          display: "flex",
+                          justifyContent: "center",
+                          width: "100%",
+                          zIndex: 4,
+                        }}
+                        transition={{ duration: 0.01 }}
+                      >
                         <Box
                           component={motion.div}
                           animate={{
-                            opacity: [0, 1],
+                            backgroundColor: "rgba(0, 0, 0, 0.9)",
+                            opacity: [0, 100],
+                            boxShadow: "0 0 5px rgba(0, 0, 0, 0.9)",
                           }}
-                          style={{
-                            opacity: 0,
-                            position: "absolute",
-                            top: "20%",
-                            textAlign: "center",
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "100%",
-                            zIndex: 4,
-                          }}
-                          transition={{ duration: 0.3 }}
+                          style={{ y: 95, width: "100%", zIndex: 4 }}
+                          transition={{ delay: 0.3, duration: 1.5 }}
                         >
-                          <Box
+                          <Typography
+                            component={motion.div}
+                            animate={{ opacity: [0, 1], scale: [0.8, 1], margin: [0, 30] }}
+                            transition={{ delay: 0.3, duration: 3.5 }}
+                            variant="h3"
+                            style={{ fontSize: 64, fontWeight: 500, color: textColor, zIndex: 4 }}
+                          >
+                            {gameOver === "WIN" || gameOver === "LOSE" ? `YOU ${gameOver}` : "TIE"}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <ThemeProvider theme={theme}>
+                        <Box
+                          animate={{ y: [-9999, 0] }}
+                          transition={{ delay: 2.95, duration: 0.05 }}
+                          component={motion.div}
+                          style={{ display: "flex", justifyContent: "center", zIndex: 4 }}
+                        >
+                          <Button
+                            onClick={resetState}
                             component={motion.div}
                             animate={{
-                              backgroundColor: "rgba(0, 0, 0, 0.9)",
-                              opacity: [0, 100],
-                              boxShadow: "0 0 5px rgba(0, 0, 0, 0.9)",
+                              opacity: [0, 1],
                             }}
-                            style={{ y: 95, width: "100%", zIndex: 4 }}
-                            transition={{ delay: 0.3, duration: 1.5 }}
+                            style={{
+                              position: "absolute",
+                              top: "20%",
+                              y: 240,
+                              opacity: 0,
+                              zIndex: 4,
+                            }}
+                            variant="contained"
+                            color={buttonType}
+                            transition={{ delay: 3, duration: 0.5 }}
                           >
-                            <Typography
-                              component={motion.div}
-                              animate={{ opacity: [0, 1], scale: [0.8, 1], margin: [0, 30] }}
-                              transition={{ delay: 0.3, duration: 3.5 }}
-                              variant="h3"
-                              style={{ fontSize: 64, fontWeight: 500, color: textColor, zIndex: 4 }}
-                            >
-                              {gameOver === "WIN" || gameOver === "LOSE" ? `YOU ${gameOver}` : "TIE"}
-                            </Typography>
-                          </Box>
+                            {buttonType === "secondary" ? "Try Again" : "Play Again"}
+                          </Button>
                         </Box>
-                        <ThemeProvider theme={theme}>
-                          <Box
-                            animate={{ y: [-9999, 0] }}
-                            transition={{ delay: 2.95, duration: 0.05 }}
-                            component={motion.div}
-                            style={{ display: "flex", justifyContent: "center", zIndex: 4 }}
-                          >
-                            <Button
-                              onClick={resetState}
-                              component={motion.div}
-                              animate={{
-                                opacity: [0, 1],
-                              }}
-                              style={{
-                                position: "absolute",
-                                top: "20%",
-                                y: 240,
-                                opacity: 0,
-                                zIndex: 4,
-                              }}
-                              variant="contained"
-                              color={buttonType}
-                              transition={{ delay: 3, duration: 0.5 }}
-                            >
-                              {buttonType === "secondary" ? "Try Again" : "Play Again"}
-                            </Button>
-                          </Box>
-                        </ThemeProvider>
-                      </>
-                    )}
+                      </ThemeProvider>
+                    </>
+                  )}
 
-                    <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
-                      <Box sx={{ mr: 20 }}>
-                        <Stacker
-                          color={CELL_COLOR}
-                          boardColor={BOARD_COLOR}
-                          controllable={true}
-                          multiplayer={true}
-                          setMyBoard={setMyBoard}
-                          setMyPiece={setMyPiece}
-                          setMyScore={setMyScore}
-                          setMyHighScore={setMyHighScore}
-                          setMyPause={setMyPause}
-                          setMyWin={setMyWin}
-                          setMyLose={setMyLose}
-                          enemyBoard={enemyBoard}
-                          enemyPiece={enemyPiece}
-                          enemyScore={enemyScore}
-                          enemyHighScore={enemyHighScore}
-                          enemyPause={enemyPause}
-                          enemyWin={enemyWin}
-                          enemyLose={enemyLose}
-                        />
-                      </Box>
-                      <Box>
-                        <Stacker
-                          color={ENEMY_CELL_COLOR}
-                          boardColor={ENEMY_BOARD_COLOR}
-                          controllable={false}
-                          multiplayer={true}
-                          setMyBoard={setMyBoard}
-                          setMyPiece={setMyPiece}
-                          setMyScore={setMyScore}
-                          setMyHighScore={setMyHighScore}
-                          setMyPause={setMyPause}
-                          setMyWin={setMyWin}
-                          setMyLose={setMyLose}
-                          enemyBoard={enemyBoard}
-                          enemyPiece={enemyPiece}
-                          enemyScore={enemyScore}
-                          enemyHighScore={enemyHighScore}
-                          enemyPause={enemyPause}
-                          enemyWin={enemyWin}
-                          enemyLose={enemyLose}
-                        />
-                      </Box>
+                  <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
+                    <Box sx={{ mr: 20 }}>
+                      <Stacker
+                        color={CELL_COLOR}
+                        boardColor={BOARD_COLOR}
+                        controllable={true}
+                        multiplayer={true}
+                        stopGames={stopGames}
+                        setMyBoard={setMyBoard}
+                        setMyPiece={setMyPiece}
+                        setMyScore={setMyScore}
+                        setMyHighScore={setMyHighScore}
+                        setMyPause={setMyPause}
+                        setMyWin={setMyWin}
+                        setMyLose={setMyLose}
+                        enemyBoard={enemyBoard}
+                        enemyPiece={enemyPiece}
+                        enemyScore={enemyScore}
+                        enemyHighScore={enemyHighScore}
+                        enemyPause={enemyPause}
+                        enemyWin={enemyWin}
+                        enemyLose={enemyLose}
+                      />
                     </Box>
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        zIndex: 2,
-                        color: "grey.200",
-                        position: "absolute",
-                        transform: "translate(0%, 700%)",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {timer}
-                    </Typography>
-                  </>
-                ) : userName === "Player 2" ? (
-                  <>
-                    {gameOver && (
-                      <>
+                    <Box>
+                      <Stacker
+                        color={ENEMY_CELL_COLOR}
+                        boardColor={ENEMY_BOARD_COLOR}
+                        controllable={false}
+                        multiplayer={true}
+                        stopGames={stopGames}
+                        setMyBoard={setMyBoard}
+                        setMyPiece={setMyPiece}
+                        setMyScore={setMyScore}
+                        setMyHighScore={setMyHighScore}
+                        setMyPause={setMyPause}
+                        setMyWin={setMyWin}
+                        setMyLose={setMyLose}
+                        enemyBoard={enemyBoard}
+                        enemyPiece={enemyPiece}
+                        enemyScore={enemyScore}
+                        enemyHighScore={enemyHighScore}
+                        enemyPause={enemyPause}
+                        enemyWin={enemyWin}
+                        enemyLose={enemyLose}
+                      />
+                    </Box>
+                  </Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      zIndex: 2,
+                      color: "grey.200",
+                      position: "absolute",
+                      transform: "translate(0%, 700%)",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {timer}
+                  </Typography>
+                </>
+              ) : userName === "Player 2" ? (
+                <>
+                  {gameOver && (
+                    <>
+                      <Box
+                        component={motion.div}
+                        animate={{
+                          opacity: [0, 1],
+                        }}
+                        style={{
+                          opacity: 0,
+                          position: "absolute",
+                          top: "20%",
+                          textAlign: "center",
+                          display: "flex",
+                          justifyContent: "center",
+                          width: "100%",
+                          zIndex: 4,
+                        }}
+                        transition={{ duration: 0.3 }}
+                      >
                         <Box
                           component={motion.div}
                           animate={{
-                            opacity: [0, 1],
+                            backgroundColor: "rgba(0, 0, 0, 0.9)",
+                            opacity: [0, 100],
+                            boxShadow: "0 0 5px rgba(0, 0, 0, 0.9)",
                           }}
-                          style={{
-                            opacity: 0,
-                            position: "absolute",
-                            top: "20%",
-                            textAlign: "center",
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "100%",
-                            zIndex: 4,
-                          }}
-                          transition={{ duration: 0.3 }}
+                          style={{ y: 95, width: "100%", zIndex: 4 }}
+                          transition={{ delay: 0.3, duration: 1.5 }}
                         >
-                          <Box
+                          <Typography
+                            component={motion.div}
+                            animate={{ opacity: [0, 1], scale: [0.8, 1], margin: [0, 30] }}
+                            transition={{ delay: 0.3, duration: 3.5 }}
+                            variant="h3"
+                            style={{ fontSize: 64, fontWeight: 500, color: textColor, zIndex: 4 }}
+                          >
+                            {gameOver === "WIN" || gameOver === "LOSE" ? `YOU ${gameOver}` : "TIE"}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <ThemeProvider theme={theme}>
+                        <Box
+                          animate={{ y: [-9999, 0] }}
+                          transition={{ delay: 2.95, duration: 0.05 }}
+                          component={motion.div}
+                          style={{ display: "flex", justifyContent: "center", zIndex: 4 }}
+                        >
+                          <Button
+                            onClick={resetState}
                             component={motion.div}
                             animate={{
-                              backgroundColor: "rgba(0, 0, 0, 0.9)",
-                              opacity: [0, 100],
-                              boxShadow: "0 0 5px rgba(0, 0, 0, 0.9)",
+                              opacity: [0, 1],
                             }}
-                            style={{ y: 95, width: "100%", zIndex: 4 }}
-                            transition={{ delay: 0.3, duration: 1.5 }}
+                            style={{
+                              position: "absolute",
+                              top: "20%",
+                              y: 240,
+                              opacity: 0,
+                              zIndex: 4,
+                            }}
+                            variant="contained"
+                            color={buttonType}
+                            transition={{ delay: 3, duration: 0.5 }}
                           >
-                            <Typography
-                              component={motion.div}
-                              animate={{ opacity: [0, 1], scale: [0.8, 1], margin: [0, 30] }}
-                              transition={{ delay: 0.3, duration: 3.5 }}
-                              variant="h3"
-                              style={{ fontSize: 64, fontWeight: 500, color: textColor, zIndex: 4 }}
-                            >
-                              {gameOver === "WIN" || gameOver === "LOSE" ? `YOU ${gameOver}` : "TIE"}
-                            </Typography>
-                          </Box>
+                            Play Again
+                          </Button>
                         </Box>
-                        <ThemeProvider theme={theme}>
-                          <Box
-                            animate={{ y: [-9999, 0] }}
-                            transition={{ delay: 2.95, duration: 0.05 }}
-                            component={motion.div}
-                            style={{ display: "flex", justifyContent: "center", zIndex: 4 }}
-                          >
-                            <Button
-                              onClick={resetState}
-                              component={motion.div}
-                              animate={{
-                                opacity: [0, 1],
-                              }}
-                              style={{
-                                position: "absolute",
-                                top: "20%",
-                                y: 240,
-                                opacity: 0,
-                                zIndex: 4,
-                              }}
-                              variant="contained"
-                              color={buttonType}
-                              transition={{ delay: 3, duration: 0.5 }}
-                            >
-                              Play Again
-                            </Button>
-                          </Box>
-                        </ThemeProvider>
-                      </>
-                    )}
+                      </ThemeProvider>
+                    </>
+                  )}
 
-                    <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
-                      <Box sx={{ mr: 20 }}>
-                        <Stacker
-                          color={CELL_COLOR}
-                          boardColor={BOARD_COLOR}
-                          controllable={false}
-                          multiplayer={true}
-                          setMyBoard={setMyBoard}
-                          setMyPiece={setMyPiece}
-                          setMyScore={setMyScore}
-                          setMyHighScore={setMyHighScore}
-                          setMyPause={setMyPause}
-                          setMyWin={setMyWin}
-                          setMyLose={setMyLose}
-                          enemyBoard={enemyBoard}
-                          enemyPiece={enemyPiece}
-                          enemyScore={enemyScore}
-                          enemyHighScore={enemyHighScore}
-                          enemyPause={enemyPause}
-                          enemyWin={enemyWin}
-                          enemyLose={enemyLose}
-                        />
-                      </Box>
-                      <Box>
-                        <Stacker
-                          color={ENEMY_CELL_COLOR}
-                          boardColor={ENEMY_BOARD_COLOR}
-                          controllable={true}
-                          multiplayer={true}
-                          setMyBoard={setMyBoard}
-                          setMyPiece={setMyPiece}
-                          setMyScore={setMyScore}
-                          setMyHighScore={setMyHighScore}
-                          setMyPause={setMyPause}
-                          setMyWin={setMyWin}
-                          setMyLose={setMyLose}
-                          enemyBoard={enemyBoard}
-                          enemyPiece={enemyPiece}
-                          enemyScore={enemyScore}
-                          enemyHighScore={enemyHighScore}
-                          enemyPause={enemyPause}
-                          enemyWin={enemyWin}
-                          enemyLose={enemyLose}
-                        />
-                      </Box>
+                  <Box sx={{ zIndex: 3, position: "absolute", display: "flex" }}>
+                    <Box sx={{ mr: 20 }}>
+                      <Stacker
+                        color={CELL_COLOR}
+                        boardColor={BOARD_COLOR}
+                        controllable={false}
+                        multiplayer={true}
+                        stopGames={stopGames}
+                        setMyBoard={setMyBoard}
+                        setMyPiece={setMyPiece}
+                        setMyScore={setMyScore}
+                        setMyHighScore={setMyHighScore}
+                        setMyPause={setMyPause}
+                        setMyWin={setMyWin}
+                        setMyLose={setMyLose}
+                        enemyBoard={enemyBoard}
+                        enemyPiece={enemyPiece}
+                        enemyScore={enemyScore}
+                        enemyHighScore={enemyHighScore}
+                        enemyPause={enemyPause}
+                        enemyWin={enemyWin}
+                        enemyLose={enemyLose}
+                      />
                     </Box>
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        zIndex: 2,
-                        color: "grey.200",
-                        position: "absolute",
-                        transform: "translate(0%, 700%)",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {timer}
-                    </Typography>
-                  </>
-                ) : (
-                  <Typography color="error">An error occured: Invalid Username</Typography>
-                )}
-              </React.Fragment>
-            
+                    <Box>
+                      <Stacker
+                        color={ENEMY_CELL_COLOR}
+                        boardColor={ENEMY_BOARD_COLOR}
+                        controllable={true}
+                        multiplayer={true}
+                        stopGames={stopGames}
+                        setMyBoard={setMyBoard}
+                        setMyPiece={setMyPiece}
+                        setMyScore={setMyScore}
+                        setMyHighScore={setMyHighScore}
+                        setMyPause={setMyPause}
+                        setMyWin={setMyWin}
+                        setMyLose={setMyLose}
+                        enemyBoard={enemyBoard}
+                        enemyPiece={enemyPiece}
+                        enemyScore={enemyScore}
+                        enemyHighScore={enemyHighScore}
+                        enemyPause={enemyPause}
+                        enemyWin={enemyWin}
+                        enemyLose={enemyLose}
+                      />
+                    </Box>
+                  </Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      zIndex: 2,
+                      color: "grey.200",
+                      position: "absolute",
+                      transform: "translate(0%, 700%)",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {timer}
+                  </Typography>
+                </>
+              ) : (
+                <Typography color="error">An error occured: Invalid Username</Typography>
+              )}
+            </React.Fragment>
           </>
         ) : gameSessionDoesNotExist ? (
           <>

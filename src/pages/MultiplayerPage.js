@@ -33,7 +33,7 @@ export const reducer = (state, action) => {
     case "RESET_WITH_KEY":
       return init(action.payload);
     case "SET_ENEMY":
-      const { myBoard, myPiece, myScore, myHighScore, myPause, myWin, myLose } = action.payload;
+      const { myBoard, myPiece, myScore, myHighScore, myPause, myWin, myLose, timeUp } = action.payload;
       return {
         ...state,
         enemyBoard: myBoard,
@@ -43,6 +43,7 @@ export const reducer = (state, action) => {
         enemyPause: myPause,
         enemyWin: myWin,
         enemyLose: myLose,
+        timeUp: timeUp,
       };
     case "MY_WIN_TRUE":
       return { ...state, myWin: true };
@@ -127,7 +128,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
     let interval;
     if (opponentDidJoinTheGame) {
       interval = window.setInterval(() => {
-        if (state.timer > 0) dispatch({ type: "TIMER_TICK" });
+        if (state.timer > 0 && !state.timeUp) dispatch({ type: "TIMER_TICK" });
       }, 1000);
     }
     if (state.timer === 0) {
@@ -152,6 +153,7 @@ const MultiplayerPage = ({ gameId, userName }) => {
         myPause: state.myPause,
         myWin: state.myWin,
         myLose: state.myLose,
+        timeUp: state.timeUp,
       });
     }
   }, [state.myBoard, state.myPiece, state.myPause, state.myScore, state.myWin, state.myLose]);

@@ -147,13 +147,14 @@ const Game = ({ color, boardColor, setGameOver, setScore, reset, setReset, contr
     if (multiplayer) {
       if (game.gameOver === "WIN") {
         dispatch({ type: "MY_WIN_TRUE" });
+        dispatch({ type: "TIME_UP" });
       }
 
       if (state.enemyWin || state.enemyLose) {
         gameDispatch("PAUSE");
       }
     }
-  }, [state?.enemyWin, state?.enemyLose]);
+  }, [state?.enemyWin, state?.enemyLose, game?.gameOver]);
 
   useEffect(() => {
     if (multiplayer) {

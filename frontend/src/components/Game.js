@@ -127,7 +127,7 @@ const removeEventListeners = (gameDispatch, multiplayer) => {
   if (!multiplayer) {
     window.removeEventListener("keydown", (e) => e.code === "KeyP" && userListener("PAUSE", gameDispatch));
   }
-  window.removeEventListener("mousedown", () => userListener("MOUSEDOWN", gameDispatch));
+  window.removeEventListener("mousedown", () => userListener("CLICK", gameDispatch));
   window.removeEventListener("keydown", (e) => e.code === "Space" && userListener("CLICK", gameDispatch));
   window.removeEventListener("keydown", (e) => e.code === "ArrowDown" && userListener("CLICK", gameDispatch));
 };

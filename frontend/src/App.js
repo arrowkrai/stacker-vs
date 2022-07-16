@@ -3,11 +3,7 @@ import HomePage from "./pages/HomePage";
 import RouterPage from "./pages/RouterPage";
 
 function App() {
-  return (
-    <>
-      <RouterPage />
-    </>
-  );
+  return <RouterPage />;
 }
 
 export default App;

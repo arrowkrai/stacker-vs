@@ -85,7 +85,7 @@ const init = (resetKey = 1) => {
 };
 
 const MultiplayerPage = ({ gameId, userName }) => {
-  const domainName = "http://localhost:3000";
+  const domainName = "https://stacker-vs.herokuapp.com";
   const [opponentSocketId, setOpponentSocketId] = useState("");
   const [opponentDidJoinTheGame, setOpponentDidJoinTheGame] = useState(false);
   const [opponentUserName, setOpponentUserName] = useState("");

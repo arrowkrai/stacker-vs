@@ -1,28 +1,33 @@
-import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
-import cors from "cors";
-import { initializeGame } from "./game.js";
-const app = express();
+const path = require("path");
+const express = require("express");
+const socketIO = require("socket.io");
+const initializeGame = require("./game.js");
+const cors = require("cors");
+require("dotenv").config();
+
+const PORT = process.env.PORT || 8000;
+
+const origin = "https://stacker-vs.herokuapp.com";
+
 const corsOptions = {
-  // origin: "*",
-  origin: "http://localhost:3000",
+  origin: origin,
   credentials: false,
   optionSuccessStatus: 200,
 };
-app.use(express());
-app.use(cors(corsOptions));
-// app.use(cors());
-const httpServer = createServer();
-const io = new Server(httpServer, {
+
+const server = express()
+  .use(cors(corsOptions))
+  .use(express.static(path.join(__dirname, "..", "frontend", "build")))
+  .use((req, res) => res.sendFile(path.join(__dirname, "..", "frontend", "build", "index.html")))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+const io = socketIO(server, {
   cors: {
     // origin: "*",
-    origin: "http://localhost:3000",
+    origin: origin,
   },
 });
 
-io.on("connection", (client) => {
-  initializeGame(io, client);
+io.on("connection", (socket) => {
+  initializeGame(io, socket);
 });
-
-httpServer.listen(process.env.PORT || 8000);

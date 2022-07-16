@@ -2,7 +2,7 @@ var io;
 var gameSocket;
 var gamesInSession = [];
 
-export const initializeGame = (sio, socket) => {
+const initializeGame = (sio, socket) => {
   io = sio;
   gameSocket = socket;
   gamesInSession.push(gameSocket);
@@ -62,3 +62,5 @@ function recievedUserName(data) {
   data.socketId = this.id;
   io.to(data.gameId).emit("get Opponent UserName", data);
 }
+
+module.exports = initializeGame
